@@ -122,7 +122,11 @@ class FormController extends AbstractController
 		
 		if(!$record instanceof Record)
 			$record = $this->_getNewRecord();
-		
+
+        // Retrieving possible previous stored form post data
+        $post = $this->sessionService->getFormPost($post);
+
+        $this->view->assign("session", $post);
 		$this->view->assign("datatype", $record->getDatatype());
 		$this->view->assign("template", $template);
 		$this->view->assign("record", $record);
@@ -173,6 +177,10 @@ class FormController extends AbstractController
 
 		// We perform the normal post action for the new or existing record
 		$post = $_POST;
+
+        // Storing the validated POST to the users session
+        $this->sessionService->setFormPost($post);
+
 		$fieldArray = $this->traverseFieldArray($post);
 
 		/////////////////////////
