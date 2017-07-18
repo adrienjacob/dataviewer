@@ -682,6 +682,17 @@ class Field extends AbstractModel
 	}
 
 	/**
+	 * Gets a complete configuration array
+	 *
+	 * @return array
+	 */
+	public function getConfigArray()
+	{
+		$fieldConf = $this->getFieldConf();
+		return $this->flexFormService->convertFlexFormContentToArray($fieldConf);
+	}
+
+	/**
 	 * Gets the setting to show empty
 	 * values in frontend
 	 * 
