@@ -104,6 +104,16 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 * @inject
 	 */
 	protected $cacheManager;
+
+	/**
+	 * Gets the session service
+	 * 
+	 * @return \MageDeveloper\Dataviewer\Service\Session\SessionService
+	 */
+	public function getSessionService()
+	{
+		return $this->sessionService;
+	}
 	
 	/**
 	 * Gets the extension name
@@ -399,4 +409,5 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 		
 		return false;
 	}
+	
 }

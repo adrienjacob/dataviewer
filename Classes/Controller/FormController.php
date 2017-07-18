@@ -124,7 +124,7 @@ class FormController extends AbstractController
 			$record = $this->_getNewRecord();
 
         // Retrieving possible previous stored form post data
-        $post = $this->sessionService->getFormPost($post);
+        $post = $this->sessionService->getFormPost();
 
         $this->view->assign("session", $post);
 		$this->view->assign("datatype", $record->getDatatype());
