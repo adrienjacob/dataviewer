@@ -44,6 +44,7 @@ $extensionName = \TYPO3\CMS\Core\Utility\GeneralUtility::underscoredToUpperCamel
  * don't need to use this
  ***********************************/
 //\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr("tx_dataviewer_domain_model_recordvalue", "EXT:dataviewer/Resources/Private/Language/locallang_csh_tx_dataviewer_domain_model_recordvalue.xlf");
+//\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages("tx_dataviewer_domain_model_recordvalue");
 
 /***********************************
  * Table Configuration "Variable"
@@ -58,7 +59,8 @@ $pluginSigPi1 = strtolower($extensionName) . "_record";
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
 	$_EXTKEY,
 	"Record",
-	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi1"
+	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi1",
+	"EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_record.gif"
 );
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi1] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi1] 		= "pi_flexform";
@@ -71,7 +73,8 @@ $pluginSigPi2 = strtolower($extensionName) . "_search";
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
 	$_EXTKEY,
 	"Search",
-	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi2"
+	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi2",
+	"EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_search.gif"
 );
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi2] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi2] 		= "pi_flexform";
@@ -84,7 +87,8 @@ $pluginSigPi3 = strtolower($extensionName) . "_letter";
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
 	$_EXTKEY,
 	"Letter",
-	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi3"
+	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi3",
+	"EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_letter.gif"
 );
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi3] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi3] 		= "pi_flexform";
@@ -97,7 +101,8 @@ $pluginSigPi4 = strtolower($extensionName) . "_sort";
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
 	$_EXTKEY,
 	"Sort",
-	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi4"
+	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi4",
+	"EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_sort.gif"
 );
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi4] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi4] 		= "pi_flexform";
@@ -110,7 +115,8 @@ $pluginSigPi5 = strtolower($extensionName) . "_filter";
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
 	$_EXTKEY,
 	"Filter",
-	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi5"
+	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi5",
+	"EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_filter.gif"
 );
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi5] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi5] 		= "pi_flexform";
@@ -123,7 +129,8 @@ $pluginSigPi6 = strtolower($extensionName) . "_select";
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
 	$_EXTKEY,
 	"Select",
-	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi6"
+	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi6",
+	"EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_select.gif"
 );
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi6] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi6] 		= "pi_flexform";
@@ -136,7 +143,8 @@ $pluginSigPi7 = strtolower($extensionName) . "_form";
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
 	$_EXTKEY,
 	"Form",
-	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi7"
+	"LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:plugin.wizarditem_pi7",
+	"EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_form.gif"
 );
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi7] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi7] 		= "pi_flexform";
@@ -154,7 +162,6 @@ $pluginSigPi8 = strtolower($extensionName) . "_pager";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_excludelist"][$pluginSigPi8] 	= "layout,select_key,recursive";
 $GLOBALS["TCA"]["tt_content"]["types"]["list"]["subtypes_addlist"][$pluginSigPi8] 		= "pi_flexform";
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPiFlexFormValue($pluginSigPi8, "FILE:EXT:" . $_EXTKEY . "/Configuration/FlexForms/Plugins/Pager.xml");
-
 
 /***********************************
  * CMS Layout Hook
@@ -188,10 +195,6 @@ $GLOBALS["TYPO3_CONF_VARS"]["SC_OPTIONS"]["t3lib/class.t3lib_tcemain.php"]["proc
 $GLOBALS["TYPO3_CONF_VARS"]["SC_OPTIONS"]["typo3/class.db_list_extra.inc"]["getTable"][$_EXTKEY] = "MageDeveloper\\Dataviewer\\Hooks\\RecordList";
 // This is to modify the list to select query with sorting by a selected field
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']["TYPO3\\CMS\\Recordlist\\RecordList\\DatabaseRecordList"]['buildQueryParameters'][$_EXTKEY] = "MageDeveloper\\Dataviewer\\Hooks\\BuildQueryParameters";
-
-// This is to modify the list to select query with sorting by a selected field
-//$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list.inc']['makeQueryArray'][$_EXTKEY] = "MageDeveloper\\Dataviewer\\Hooks\\MakeQueryArray";
-// TYPO3 7.6
 
 // This is to modify the list header of records and to add a selectable box for the sorting
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list_extra.inc']['actions'][$_EXTKEY] = "MageDeveloper\\Dataviewer\\Hooks\\RecordListHeader";
@@ -243,7 +246,6 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProc
 $GLOBALS['TYPO3_CONF_VARS']['BE']['toolbarItems'][] = 'MageDeveloper\\Dataviewer\\Hooks\\ToolbarItem';
 
 
-
 /***********************************
  * RealUrl Configuration
  ***********************************/
@@ -251,118 +253,75 @@ $GLOBALS["TYPO3_CONF_VARS"]["SC_OPTIONS"]["ext/realurl/class.tx_realurl_autoconf
 //$GLOBALS["TYPO3_CONF_VARS"]["SC_OPTIONS"]["ext/realurl/class.tx_realurl_autoconfgen.php"]["extensionConfiguration"][$_EXTKEY] = "EXT:dataviewer/Classes/RealUrl/RealUrlConfiguration.php:MageDeveloper\\Dataviewer\\RealUrl\\RealUrlConfiguration->getRealUrlConfiguration";
 
 
-
-/***********************************
- * Backend Stuff
- ***********************************/
-if (TYPO3_MODE === "BE")
+$boot = function () 
 {
-	$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
-		0 => "LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:tx_dataviewer",
-		1 => "--div--",
-	];
-
-	$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
-	if ($objectManager->isRegistered(\MageDeveloper\Dataviewer\Domain\Repository\DatatypeRepository::class) &&
-		\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded("dataviewer")
-	)
+	if (TYPO3_MODE === "BE")
 	{
-		///////////////////////////////////////////////////////////
-		// We generate page icons for each datatype, that exists //
-		///////////////////////////////////////////////////////////
-
-		try {
-			// We need to ignore exceptions here in case the
-			// table does not exist
-			/* @var \MageDeveloper\Dataviewer\Domain\Repository\DatatypeRepository $datatypeRepository */
-			$datatypeRepository = $objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\DatatypeRepository::class);
-			$datatypes = $datatypeRepository->findAll(false);
-
-			$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
-				0 => "DataViewer Icons",
-				1 => "--div--",
-			];
-
-			foreach($datatypes as $_datatype)
-			{
-				/* @var \MageDeveloper\Dataviewer\Domain\Model\Datatype $_datatype */
-				$iconId = "extensions-dataviewer-".$_datatype->getIcon();
-
-				if(!isset($GLOBALS["TCA"]["pages"]["ctrl"]["typeicon_classes"]["contains-dataviewer-{$iconId}"]))
-				{
-					$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
-						0 => $_datatype->getName(),
-						1 => "dataviewer-{$iconId}",
-						2 => $iconId
-					];
-					$GLOBALS["TCA"]["pages"]["ctrl"]["typeicon_classes"]["contains-dataviewer-{$iconId}"] = $iconId;
-				}
-
-			}
-
-			$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
-				0 => "LLL:EXT:lang/locallang_view_help.xlf:TOC_extensions",
-				1 => "--div--",
-			];
-
-		} catch(\Exception $e)
-		{
-			// No exception printing here        
-		}
-
-		$iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
-
-		/////////////////////
-		// DataViewer Logo //
-		/////////////////////
-		$iconRegistry->registerIcon(
-			"dataviewer-icon-logo",
-			\TYPO3\CMS\Core\Imaging\IconProvider\BitmapIconProvider::class,
-			["source" => "EXT:dataviewer/Resources/Public/Images/logo_dataviewer.png"]
-		);
-
-		//////////////////////////////////////////////////
-		// We add our plugin icons to the Icon Registry //
-		//////////////////////////////////////////////////
-		$iconIdentifiers = [
-			'dataviewer_filter',
-			'dataviewer_form',
-			'dataviewer_letter',
-			'dataviewer_pager',
-			'dataviewer_record',
-			'dataviewer_search',
-			'dataviewer_select',
-			'dataviewer_sort',
+		$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
+			0 => "LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:tx_dataviewer",
+			1 => "--div--",
 		];
-		
-		foreach ($iconIdentifiers as $iconIdentifier) {
-			$iconRegistry->registerIcon(
-				"dataviewer-icon-" . $iconIdentifier,
-				\TYPO3\CMS\Core\Imaging\IconProvider\BitmapIconProvider::class,
-				["source" => "EXT:dataviewer/Resources/Public/Icons/Plugins/" . $iconIdentifier . ".gif"]
-			);
+		if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded("dataviewer"))
+		{
+			///////////////////////////////////////////////////////////
+			// We generate page icons for each datatype, that exists //
+			///////////////////////////////////////////////////////////
+			try {
+				// We need to ignore exceptions here in case the table does not exist
+				
+				/* @var \TYPO3\CMS\Core\Database\Connection $query */
+				$query = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Database\ConnectionPool::class)
+					->getConnectionForTable("tx_dataviewer_domain_model_datatype");
+					
+				$datatypes = $query->select(["name","icon"], "tx_dataviewer_domain_model_datatype")->fetchAll();
+
+				$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
+					0 => "DataViewer Icons",
+					1 => "--div--",
+				];
+				foreach($datatypes as $_datatype)
+				{
+					$iconId = "extensions-dataviewer-".$_datatype["icon"];
+					if(!isset($GLOBALS["TCA"]["pages"]["ctrl"]["typeicon_classes"]["contains-dataviewer-{$iconId}"]))
+					{
+						$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
+							0 => $_datatype["name"],
+							1 => "dataviewer-{$iconId}",
+							2 => $iconId
+						];
+						$GLOBALS["TCA"]["pages"]["ctrl"]["typeicon_classes"]["contains-dataviewer-{$iconId}"] = $iconId;
+					}
+				}
+				$GLOBALS["TCA"]["pages"]["columns"]["module"]["config"]["items"][] = [
+					0 => "LLL:EXT:lang/locallang_view_help.xlf:TOC_extensions",
+					1 => "--div--",
+				];
+			} catch(\Exception $e)
+			{
+				// No exception printing here
+			}
 		}
-
+		/**
+		 * Backend Module Registration
+		 */
+		\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
+			"MageDeveloper."."dataviewer",
+			"web",          			// Main area
+			"dataviewer",         		// Name of the module
+			"",             			// Position of the module
+			[   	        			// Allowed controller action combinations
+				"BackendModule" => "index, records, datatypes, datatypesDetails, recordsDetails, createRecord",
+				"BackendCsvAssistant" => "index, page, datatype, file, assign, import, review",
+			],
+			[	// Additional configuration
+				"access"    => "user,group",
+				"icon"      => "EXT:dataviewer/Resources/Public/Images/module_icon.png",
+				"labels" 	=> "LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf",
+			]
+		);
 	}
+};
+$boot();
+unset($boot);
 
-	/**
-	 * Backend Module Registration
-	 */
-	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
-		"MageDeveloper.".$_EXTKEY,
-		"web",          			// Main area
-		"dataviewer",         	// Name of the module
-		"",             				// Position of the module
-		[   	        			// Allowed controller action combinations
-			"BackendModule" => "index, records, datatypes, datatypesDetails, recordsDetails, createRecord",
-			"BackendCsvAssistant" => "index, page, datatype, file, assign, import, review",
-		],
-		[	// Additional configuration
-			"access"    => "user,group",
-			"icon"      => "EXT:dataviewer/Resources/Public/Images/module_icon.png",
-			"labels" 	=> "LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf",
-		]
-	);
-
-}
 
