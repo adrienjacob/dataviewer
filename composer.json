@@ -1,0 +1,38 @@
+{
+	"name": "magedeveloper/dataviewer",
+	"type": "typo3-cms-extension",
+	"description": "Build easy and intuitive TCA-records (e.g. News, Jobs, Events and more) on the fly without developing a new extension. Only templating is needed; includes many plugins for all kinds of usage!",
+	"homepage": "https://github.com/magedeveloper/dataviewer",
+	"version": "2.0.3",
+	"license": ["GPL-2.0+"],
+	"keywords": [
+		"TYPO3",
+		"CMS",
+		"dataviewer",
+		"typo3",
+		"magedeveloper",
+		"records"
+	],
+	"support": {
+		"issues": "https://github.com/magedeveloper/dataviewer/issues"
+	},
+	"require": {
+		"typo3/cms-core": "~8.7.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"MageDeveloper\\Dataviewer\\": "Classes"
+		}
+	},
+	"replace": {
+		"dataviewer": "self.version",
+		"typo3-ter/dataviewer": "self.version"
+	},
+	"authors": [
+		{
+			"name": "Bastian Zagar",
+			"email": "kontakt@magedeveloper.de",
+			"homepage": "http://www.magedeveloper.de/"
+		}
+	]
+}
