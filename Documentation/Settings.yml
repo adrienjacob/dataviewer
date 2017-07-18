@@ -6,8 +6,8 @@
 conf.py:
   copyright: 2017
   project: Dataviewer
-  version: 2.0.2
-  release: 2.0.2
+  version: 2.1.0
+  release: 2.1.0
   latex_elements:
     papersize: a4paper
     pointsize: 10pt
