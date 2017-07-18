@@ -4,7 +4,7 @@ $EM_CONF[$_EXTKEY] = [
 	"description" => "Build easy and intuitive TCA-records (e.g. News, Jobs, Events and more) on the fly without developing a new extension. Only templating is needed; includes many plugins for all kinds of usage!",
 	"category" => "plugin",
 	"shy" => 0,
-	"version" => "2.0.2",
+	"version" => "2.1.0",
 	"dependencies" => "cms,extbase,fluid",
 	"conflicts" => "",
 	"priority" => "",
@@ -23,7 +23,7 @@ $EM_CONF[$_EXTKEY] = [
 	"CGLcompliance_note" => "",
 	"constraints" => [
 		"depends" => [
-			"typo3" => "8.7.1-8.7.2",
+			"typo3" => "8.7.1-8.7.3",
 			"extbase" => "",
 			"fluid" => "",
 		],
