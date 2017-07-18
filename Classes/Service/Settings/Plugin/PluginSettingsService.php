@@ -3,6 +3,7 @@ namespace MageDeveloper\Dataviewer\Service\Settings\Plugin;
 
 use MageDeveloper\Dataviewer\Configuration\ExtensionConfiguration as Configuration;
 use MageDeveloper\Dataviewer\Service\Settings\AbstractSettingsService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -16,6 +17,13 @@ use MageDeveloper\Dataviewer\Service\Settings\AbstractSettingsService;
  */
 class PluginSettingsService extends AbstractSettingsService
 {
+	/**
+	 * Template Selection
+	 * @var string
+	 */
+	const TEMPLATE_SELECTION_CUSTOM			= "CUSTOM";
+	const TEMPLATE_SELECTION_FLUID			= "FLUID";
+
 	/**
 	 * Plugin Name
 	 * @var string
@@ -137,5 +145,129 @@ class PluginSettingsService extends AbstractSettingsService
 	{
 		$templates = $this->getPredefinedTemplates();
 		return (isset($templates[$templateId]))?$templates[$templateId]:null;
+	}
+
+	/**
+	 * Gets the template override setting
+	 *
+	 * @return null|string
+	 */
+	public function getTemplateOverride()
+	{
+		return $this->getSettingByCode("template_override");
+	}
+
+	/**
+	 * Gets the value from the template
+	 * selection
+	 *
+	 * @return null|string
+	 */
+	public function getTemplateSelection()
+	{
+		return $this->getSettingByCode("template_selection");
+	}
+
+	/**
+	 * Retrieves the template path from the template selection
+	 * either from the override or the selector box
+	 *
+	 * @return string
+	 */
+	public function getTemplate()
+	{
+		$templateSelection = $this->getTemplateSelection();
+		$templateOverride  = $this->getTemplateOverride();
+
+		if($templateSelection == self::TEMPLATE_SELECTION_CUSTOM && $templateOverride)
+			return $templateOverride;
+
+		return $this->getPredefinedTemplateById($templateSelection);
+	}
+
+	/**
+	 * Checks if the plugin setting has a template
+	 * override
+	 *
+	 * @return bool
+	 */
+	public function hasTemplate()
+	{
+		$templateSelection = $this->getTemplateSelection();
+		$templateOverride  = $this->getTemplateOverride();
+
+		if($templateSelection == self::TEMPLATE_SELECTION_CUSTOM)
+			if($templateOverride)
+				return true;
+			else
+				return false;
+
+		if($templateSelection)
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * Gets the template switch conditions
+	 * from the plugin configuration
+	 *
+	 * @return array
+	 */
+	public function getTemplateSwitchConditions()
+	{
+		$conditions = $this->getSettingByCode("template_switch");
+
+		if(!is_array($conditions))
+			$conditions = [];
+
+		return $conditions;
+	}
+
+	/**
+	 * Gets the entered fluid code
+	 *
+	 * @return null|string
+	 */
+	public function getFluidCode()
+	{
+		return $this->getSettingByCode("fluid_code");
+	}
+
+	/**
+	 * Checks if the plugin wants to render custom
+	 * fluid code
+	 *
+	 * @return bool
+	 */
+	public function isCustomFluidCode()
+	{
+		return ($this->getTemplateSelection() == self::TEMPLATE_SELECTION_FLUID);
+	}
+
+	/**
+	 * Gets selected variable ids
+	 *
+	 * @return array
+	 */
+	public function getSelectedVariableIds()
+	{
+		$variableInjectionConfig = $this->getSettingByCode("variable_injection");
+		$variablesFromInjection = GeneralUtility::trimExplode(",", $variableInjectionConfig, true);
+
+		$variableInlineConfig = $this->getSettingByCode("inline_variable_injection");
+		$variablesFromInline = GeneralUtility::trimExplode(",", $variableInlineConfig, true);
+
+		return array_merge($variablesFromInjection, $variablesFromInline);
+	}
+
+	/**
+	 * Debug Mode Enabled
+	 *
+	 * @return bool
+	 */
+	public function isDebug()
+	{
+		return (bool)$this->getSettingByCode("debug");
 	}
 }

@@ -87,78 +87,6 @@ class ListSettingsService extends PluginSettingsService
 	}
 
 	/**
-	 * Gets the template override setting
-	 *
-	 * @return null|string
-	 */
-	public function getTemplateOverride()
-	{
-		return $this->getSettingByCode("template_override");
-	}
-
-	/**
-	 * Gets the value from the template
-	 * selection
-	 *
-	 * @return null|string
-	 */
-	public function getTemplateSelection()
-	{
-		return $this->getSettingByCode("template_selection");
-	}
-
-	/**
-	 * Retrieves the template path from the template selection
-	 * either from the override or the selector box
-	 * 
-	 * @return string
-	 */
-	public function getTemplate()
-	{
-		$templateSelection = $this->getTemplateSelection();
-		$templateOverride  = $this->getTemplateOverride();
-		
-		if($templateSelection == self::TEMPLATE_SELECTION_CUSTOM && $templateOverride)
-			return $templateOverride;
-		
-		return $this->getPredefinedTemplateById($templateSelection);
-	}
-
-	/**
-	 * Checks if the plugin setting has a template
-	 * override
-	 *
-	 * @return bool
-	 */
-	public function hasTemplate()
-	{
-		$templateSelection = $this->getTemplateSelection();
-		$templateOverride  = $this->getTemplateOverride();
-		
-		if($templateSelection == self::TEMPLATE_SELECTION_CUSTOM)
-			if($templateOverride)
-				return true;
-			else
-				return false;
-			
-		if($templateSelection)	
-			return true;
-			
-		return false;	
-	}
-
-	/**
-	 * Checks if the plugin wants to render custom
-	 * fluid code
-	 * 
-	 * @return bool
-	 */
-	public function isCustomFluidCode()
-	{
-		return ($this->getTemplateSelection() == self::TEMPLATE_SELECTION_FLUID);
-	}
-
-	/**
 	 * Gets the setting for the divide type
 	 *
 	 * @return null|string
@@ -285,32 +213,6 @@ class ListSettingsService extends PluginSettingsService
 	}
 
 	/**
-	 * Gets selected variable ids
-	 *
-	 * @return array
-	 */
-	public function getSelectedVariableIds()
-	{
-		$variableInjectionConfig = $this->getSettingByCode("variable_injection");
-		$variablesFromInjection = GeneralUtility::trimExplode(",", $variableInjectionConfig, true);
-
-		$variableInlineConfig = $this->getSettingByCode("inline_variable_injection");
-		$variablesFromInline = GeneralUtility::trimExplode(",", $variableInlineConfig, true);
-
-		return array_merge($variablesFromInjection, $variablesFromInline);
-	}
-
-	/**
-	 * Debug Mode Enabled
-	 *
-	 * @return bool
-	 */
-	public function isDebug()
-	{
-		return (bool)$this->getSettingByCode("debug");
-	}
-
-	/**
 	 * Sorting settings of this plugin
 	 * are forced and not disturbed by 
 	 * an other sorting plugin
@@ -320,22 +222,6 @@ class ListSettingsService extends PluginSettingsService
 	public function isForcedSorting()
 	{
 		return (bool)$this->getSettingByCode("force_sorting");
-	}
-
-	/**
-	 * Gets the template switch conditions
-	 * from the plugin configuration
-	 * 
-	 * @return array
-	 */
-	public function getTemplateSwitchConditions()
-	{
-		$conditions = $this->getSettingByCode("template_switch");
-		
-		if(!is_array($conditions))
-			$conditions = [];
-			
-		return $conditions;
 	}
 
 	/**
@@ -363,16 +249,6 @@ class ListSettingsService extends PluginSettingsService
 	public function renderOnlyTemplate()
 	{
 		return (bool)$this->getSettingByCode("render_only_template");
-	}
-
-	/**
-	 * Gets the entered fluid code
-	 * 
-	 * @return null|string
-	 */
-	public function getFluidCode()
-	{
-		return $this->getSettingByCode("fluid_code");
 	}
 
 	/**
