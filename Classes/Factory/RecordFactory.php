@@ -105,11 +105,17 @@ class RecordFactory
 
 		// Setting the datatype to the record
 		$record->setDatatype($datatype);
+
 		
 		if(isset($fieldArray["pid"]) && is_numeric($fieldArray["pid"]))
 		{
 			$record->setPid($fieldArray["pid"]);
 			unset($fieldArray["pid"]);		
+		}
+		else
+		{
+			// Fallback for pid of the datatype pid
+			$fieldArray["pid"] = $datatype->getPid();
 		}
 		
 		// Traverse the data into the relevant fieldId=>value information
@@ -156,14 +162,25 @@ class RecordFactory
 		else
 			$traversedFieldArray = $updateFieldArray;
 
+		
+		$recordValues = $record->getRecordValues();
+		
+		$originalRecordFieldArray = [];
+		foreach($recordValues as $_recordValue) {
+			/* @var RecordValue $_recordValue */
+			$originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
+		}
+
+		$fieldArray = array_replace($originalRecordFieldArray, $traversedFieldArray);
+		
 		// Check for validation errors
-		$this->validationErrors = $this->recordDataHandler->validateFieldArray($traversedFieldArray, $record->getDatatype());
+		$this->validationErrors = $this->recordDataHandler->validateFieldArray($fieldArray, $record->getDatatype());
 
 		// We hide the record on any error
 		if(!empty($this->validationErrors))
 			$record->setHidden(true);
 
-		$result = $this->recordDataHandler->processRecord($traversedFieldArray, $record);
+		$result = $this->recordDataHandler->processRecord($fieldArray, $record);
 
 		return $record;
 	}
