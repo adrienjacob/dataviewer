@@ -27,5 +27,26 @@ class ExtensionConfiguration
      * 
      * @var string
      */
-	const EXTENSION_RECORD_TABLE = "tx_dataviewer_domain_model_record";
+	const EXTENSION_RECORD_TABLE 			= "tx_dataviewer_domain_model_record";
+	const EXTENSION_RECORD_VALUE_TABLE		= "tx_dataviewer_domain_model_recordvalue";
+
+	/**
+	 * Gets the language field for records
+	 * 
+	 * @return string
+	 */
+	public static function getRecordsLanguageField()
+	{
+		return $GLOBALS["TCA"][self::EXTENSION_RECORD_TABLE]["ctrl"]["languageField"];
+	}
+
+	/**
+	 * Gets the language field for recordValues
+	 * 
+	 * @return string
+	 */
+	public static function getRecordValuesLanguageField()
+	{
+		return $GLOBALS["TCA"][self::EXTENSION_RECORD_VALUE_TABLE]["ctrl"]["languageField"];
+	}
 }
