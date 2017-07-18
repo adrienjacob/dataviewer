@@ -98,6 +98,11 @@ class Record extends AbstractModel
 	protected $_languageUid;
 
 	/**
+	 * @var \MageDeveloper\Dataviewer\Domain\Model\Record
+	 */
+	protected $l10nParent;
+
+	/**
 	 * Finalized record values
 	 *
 	 * @var \MageDeveloper\Dataviewer\Domain\Repository\ValueRepository
@@ -410,7 +415,6 @@ class Record extends AbstractModel
 				if($_recordValue->getField() instanceof \MageDeveloper\Dataviewer\Domain\Model\Field)
 					if ($_recordValue->getField()->getUid() == $field->getUid())
 						return $_recordValue;
-
 			}
 		}
 
@@ -525,6 +529,25 @@ class Record extends AbstractModel
 	public function get_languageUid() 
 	{
 		return $this->_languageUid;
+	}
+
+	/**
+	 * Set l10n parent
+	 *
+	 * @param \MageDeveloper\Dataviewer\Domain\Model\Record $l10nParent
+	 */
+	public function setL10nParent(\MageDeveloper\Dataviewer\Domain\Model\Record $l10nParent)
+	{
+		$this->l10nParent = $l10nParent;
+	}
+	/**
+	 * Get l10n parent
+	 *
+	 * @return \MageDeveloper\Dataviewer\Domain\Model\Record
+	 */
+	public function getL10nParent()
+	{
+		return $this->l10nParent;
 	}
 
 	/**

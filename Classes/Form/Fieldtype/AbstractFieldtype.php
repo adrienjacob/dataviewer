@@ -258,6 +258,10 @@ abstract class AbstractFieldtype
 	 */
 	public function prepareTca(array &$tca)
 	{
+		// This is needed in case it is empty, so we directly empty it here
+		$grList = $GLOBALS['TSFE']->gr_list;
+		$GLOBALS['TSFE']->gr_list = "";
+
 		$fieldName = $tca["fieldName"];
 
         // We evaluate the command from our new or existing record
@@ -276,6 +280,7 @@ abstract class AbstractFieldtype
 		foreach($this->formDataProviders as $fdp)
 			$tca = $fdp->addData($tca);
 
+		$GLOBALS['TSFE']->gr_list = $grList;
 	}
 
 	/**
@@ -598,8 +603,6 @@ abstract class AbstractFieldtype
 		// Implode the content of the default values and return them as a string
 		$recordValue = $this->getRecord()->getRecordValueByField($this->getField());
 		
-		
-
 		if ($recordValue instanceof RecordValueModel && $default === false)
 		{
 			/* @var RecordValueModel $_recordValue */

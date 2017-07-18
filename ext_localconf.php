@@ -161,3 +161,18 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 	["Pager" => "index, page"], // UnCached
 	\TYPO3\CMS\Extbase\Utility\ExtensionUtility::PLUGIN_TYPE_PLUGIN
 );
+
+/** @var \TYPO3\CMS\Extbase\SignalSlot\Dispatcher $signalSlotDispatcher */
+$signalSlotDispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\SignalSlot\Dispatcher::class);
+$signalSlotDispatcher->connect(
+	\TYPO3\CMS\Extbase\Persistence\Generic\Backend::class,
+	'beforeGettingObjectData',
+	\MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage::class,
+	'forceLanguageForQueries'
+);
+
+// The code below is NO PUBLIC API!
+/** @var $extbaseObjectContainer \TYPO3\CMS\Extbase\Object\Container\Container */
+$extbaseObjectContainer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\Container\Container::class);
+$extbaseObjectContainer->registerImplementation(\TYPO3\CMS\Extbase\Persistence\QueryResultInterface::class, \MageDeveloper\Dataviewer\Persistence\Storage\CustomQueryResult::class);
+unset($extbaseObjectContainer);

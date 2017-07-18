@@ -3,7 +3,6 @@ if (!defined ('TYPO3_MODE')) {
 	die ('Access denied.');
 }
 
-
 return [
 	"ctrl" => [
 		"title"	=> "LLL:EXT:dataviewer/Resources/Private/Language/locallang_db.xlf:tx_dataviewer_domain_model_record",
@@ -219,7 +218,7 @@ return [
 				'enableMultiSelectFilterTextfield' => true,
 				'foreign_table' => 'tx_dataviewer_domain_model_recordvalue',
 				'foreign_field' => 'record',
-				'foreign_table_where' => 'AND tx_dataviewer_domain_model_recordvalue.pid=###CURRENT_PID###',
+				'foreign_table_where' => 'AND tx_dataviewer_domain_model_recordvalue.pid=###CURRENT_PID### AND tx_dataviewer_domain_model_recordvalue.sys_language_uid=###SYS_LANGUAGE_UID###',
 				'size' => 10,
 				'maxitems' => 9999,
 				'multiple' => 1,

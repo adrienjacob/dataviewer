@@ -15,7 +15,7 @@
                             <label></label>
                             <config>
                                 <type>user</type>
-                                <userFunc>MageDeveloper\Dataviewer\UserFunc\Logo->displayLogoText</userFunc>
+                                <userFunc>MageDeveloper\Dataviewer\UserFunc\Logo->displayLogoAndMessageOnEmptyRecordStoragePage</userFunc>
                             </config>
                         </TCEforms>
                     </settings.logo>
@@ -28,7 +28,7 @@
                                 <multiple>0</multiple>
                                 <items type="array"></items>
                                 <foreign_table>tx_dataviewer_domain_model_datatype</foreign_table>
-                                <foreign_table_where><![CDATA[AND 0 < FIND_IN_SET(tx_dataviewer_domain_model_datatype.pid, (SELECT pages FROM tt_content WHERE uid=###THIS_UID###))]]></foreign_table_where>
+                                <foreign_table_where><![CDATA[AND tx_dataviewer_domain_model_datatype.sys_language_uid IN (-1, 0) AND 0 < FIND_IN_SET(tx_dataviewer_domain_model_datatype.pid, (SELECT pages FROM tt_content WHERE uid=###THIS_UID###))]]></foreign_table_where>
                                 <maxitems>1</maxitems>
                                 <minitems>0</minitems>
                                 <size>1</size>
@@ -161,13 +161,54 @@
                 </TCEforms>
                 <type>array</type>
                 <el>
+                    <settings.template_selection>
+                        <TCEforms>
+                            <label>LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.template_selection</label>
+                            <onChange>reload</onChange>
+                            <config type="array">
+                                <type>select</type>
+                                <renderType>selectSingle</renderType>
+                                <items type="array">
+                                    <numIndex index="0" type="array">
+                                        <numIndex index="0">LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.please_select</numIndex>
+                                        <numIndex index="1"></numIndex>
+                                    </numIndex>
+                                    <numIndex index="1" type="array">
+                                        <numIndex index="0">LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.custom_template_path</numIndex>
+                                        <numIndex index="1">CUSTOM</numIndex>
+                                    </numIndex>
+                                    <numIndex index="2" type="array">
+                                        <numIndex index="0">LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.custom_fluid_code</numIndex>
+                                        <numIndex index="1">FLUID</numIndex>
+                                    </numIndex>
+                                </items>
+                                <multiple>0</multiple>
+                                <itemsProcFunc>MageDeveloper\Dataviewer\UserFunc\Template->populateTemplates</itemsProcFunc>
+                                <maxitems>1</maxitems>
+                                <minitems>1</minitems>
+                                <size>1</size>
+                            </config>
+                        </TCEforms>
+                    </settings.template_selection>
+                    <settings.fluid_code>
+                        <TCEforms>
+                            <label>LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.fluid</label>
+                            <displayCond>FIELD:settings.template_selection:=:FLUID</displayCond>
+                            <config>
+                                <type>text</type>
+                                <renderType>t3editor</renderType>
+                                <format>mixed</format>
+                                <rows>15</rows>
+                            </config>
+                        </TCEforms>
+                    </settings.fluid_code>
                     <settings.template_override>
                         <TCEforms>
                             <label>LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.template_override</label>
+                            <displayCond>FIELD:settings.template_selection:=:CUSTOM</displayCond>
                             <config type="array">
                                 <type>group</type>
                                 <internal_type>file</internal_type>
-                                <allowed>html</allowed>
                                 <max_size>2000</max_size>
                                 <show_thumbs>0</show_thumbs>
                                 <size>1</size>
@@ -187,7 +228,7 @@
                                 <autosizemax>10</autosizemax>
                                 <items type="array"></items>
                                 <foreign_table>tx_dataviewer_domain_model_variable</foreign_table>
-                                <foreign_table_where><![CDATA[AND 0 < FIND_IN_SET(tx_dataviewer_domain_model_variable.pid, (SELECT pages FROM tt_content WHERE uid=###THIS_UID###))]]></foreign_table_where>
+                                <foreign_table_where><![CDATA[AND tx_dataviewer_domain_model_variable.sys_language_uid IN (-1, 0) AND 0 < FIND_IN_SET(tx_dataviewer_domain_model_variable.pid, (SELECT pages FROM tt_content WHERE uid=###THIS_UID###))]]></foreign_table_where>
                                 <maxitems>99999</maxitems>
                                 <minitems>0</minitems>
                                 <size>5</size>

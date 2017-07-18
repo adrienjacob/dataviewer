@@ -84,7 +84,11 @@ class Inline extends AbstractFieldtype implements FieldtypeInterface
 								"showSynchronizationLink" => 1,
 								"showPossibleLocalizationRecords" => 1,
 								"useSortable" => 1,
-								"showAllLocalizationLink" => 1,
+								"showAllLocalizationLink" => 0,
+							],
+							"behaviour" => [
+								"localizationMode" => "none",
+								"localizeChildrenAtParentLocalization" => false,
 							],
 						],
 					],
@@ -94,6 +98,8 @@ class Inline extends AbstractFieldtype implements FieldtypeInterface
 			"inlineFirstPid" => $this->getInlineFirstPid(),
 			"inlineResolveExistingChildren" => true,
 			"inlineCompileExistingChildren"=> true,
+			//"defaultLanguageRow" => $databaseRow,
+			"defaultLanguageRow" => null,
 		];
 
 		$this->prepareTca($tca);

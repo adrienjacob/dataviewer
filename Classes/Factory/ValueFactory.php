@@ -61,9 +61,11 @@ class ValueFactory implements SingletonInterface
 	public function create(Field $field, Record $record, $recordValue = null)
 	{
 		$value = new \MageDeveloper\Dataviewer\Domain\Model\Value();
+		$languageUid = $GLOBALS["TSFE"]->sys_language_uid;
 
 		// Find a recordvalue by cond
-		$recordValue = $this->recordValueRepository->findOneByRecordAndField($record, $field);
+		$this->recordValueRepository->setLanguageUid($languageUid);
+		$recordValue = $this->recordValueRepository->findOneByRecordAndField($record, $field, $languageUid);
 
 		if(!$recordValue instanceof RecordValue)
 		{

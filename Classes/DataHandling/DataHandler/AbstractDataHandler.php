@@ -60,6 +60,12 @@ class AbstractDataHandler
 	protected $fieldtypeSettingsService;
 
 	/**
+	 * @var \MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage
+	 * @inject
+	 */
+	protected $extbaseEnforceLanguageService;
+
+	/**
 	 * Subsitute Array NEW-IDs with IDs
 	 *
 	 * @var array
@@ -85,6 +91,7 @@ class AbstractDataHandler
 		$this->dataHandler				= $this->objectManager->get(\MageDeveloper\Dataviewer\DataHandling\DataHandler::class);
 		$this->flexTools 				= $this->objectManager->get(\TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools::class);
 		$this->fieldtypeSettingsService	= $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService::class);
+		$this->extbaseEnforceLanguageService = $this->objectManager->get(\MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage::class);
 	}
 
 	/**

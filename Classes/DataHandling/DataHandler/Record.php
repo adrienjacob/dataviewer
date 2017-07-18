@@ -7,8 +7,10 @@ use MageDeveloper\Dataviewer\Domain\Model\Record as RecordModel;
 use MageDeveloper\Dataviewer\Domain\Model\RecordValue as RecordValueModel;
 use MageDeveloper\Dataviewer\Domain\Model\Field as FieldModel;
 use MageDeveloper\Dataviewer\Domain\Model\FieldValue as FieldValueModel;
+use MageDeveloper\Dataviewer\Configuration\ExtensionConfiguration as Config;
 
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -84,6 +86,13 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	 * @var int
 	 */
 	protected $mainRecordUid = 0;
+
+	/**
+	 * Current Language Uid
+	 * 
+	 * @var int
+	 */
+	protected $languageUid;
 
 	/**
 	 * Constructor
@@ -172,7 +181,7 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	public function getFieldById($id)
 	{
 		/* @var FieldModel $field */
-		$field = $this->fieldRepository->findByUid($id, false);
+		$field = $this->fieldRepository->findByUidX($id, false);
 
 		if ($field instanceof FieldModel && $field->getUid() == $id)
 			return $field;
@@ -344,43 +353,17 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	public function processCmdmap_deleteAction($table, $id, $recordToDelete, &$recordWasDeleted, &$parentObj)
 	{
 		if ($table != "tx_dataviewer_domain_model_record") return;
-
-		$recordValues = $this->recordValueRepository->findByRecordId($id);
-		if ($recordValues && $recordValues->count())
-		{
-			// Remove each record value
-			/* @var RecordValueModel $_recordValue */
-			foreach ( $recordValues as $_recordValue )
-			{
-				if($_recordValue->getField() instanceof FieldModel)
-				{
-					// We need to check the fieldtype to do certain delete behaviours here
-					switch ($_recordValue->getField()->getType()) {
-						case "datatype":
-							$ids = GeneralUtility::trimExplode(",", $_recordValue->getValueContent());
-
-							foreach ($ids as $_id) {
-								$_record = $this->getRecordById($_id);
-								if ($_record) {
-									$_record->setDeleted(true);
-									$this->recordRepository->update($_record);
-								}
-							}
-							break;
-						default:
-							break;
-					}
-
-					$_recordValue->setDeleted(true);
-					$this->recordValueRepository->update($_recordValue);
-				}
-			}
-
-		}
+		
+		// Determine the language
+		$languageField = Config::getRecordsLanguageField();
+		$languageUid = $recordToDelete[$languageField];
+		$this->recordRepository->setLanguageUid($languageUid);
+		$this->_removeRecordValuesByRecordId($id, $languageUid);
 
 		// Deleting the main record
 		// The record is possibly not existing here
 		$record = $this->getRecordById($id);
+
 		if($record)
 		{
 			$record->setDeleted(true);
@@ -408,9 +391,15 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, &$parentObj)
 	{
 		if ($table != "tx_dataviewer_domain_model_record") return;
-
+		
 		if(!$this->mainRecordUid)
 			$this->mainRecordUid = $id;
+			
+		if(!$this->languageUid)
+		{
+			$languageField = Config::getRecordsLanguageField();
+			$this->languageUid = $incomingFieldArray[$languageField];
+		}	
 		
 		// Storing the fieldArray to the session to prefill form values for easier modifying
 		$this->recordValueSessionService->store($id, $incomingFieldArray);
@@ -470,7 +459,6 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 			if(is_numeric($_k))
 				unset($incomingFieldArray[$_k]);
 
-		// We clear the GLOBALS 
 	}
 
 	/**
@@ -509,37 +497,41 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	{
 		// Assign substNEWIds for later usage if the element is in our target
 		$this->substNEWwithIDs = array_merge($this->substNEWwithIDs, $parentObj->substNEWwithIDs);
+		
 		$this->_substituteRecordValues();
-
+		
 		if ($table != "tx_dataviewer_domain_model_record") return;
 		
 		// Disable Versioning
 		//$parentObj->bypassWorkspaceRestrictions = true;
 		//$parentObj->updateModeL10NdiffDataClear = true;
 		//$parentObj->updateModeL10NdiffData = false;
-
+		
 		// Substitute the NEW to Id on all record values and maybe in this array
 		// We need to transform the saved values (NEW<hash>) to already saved ids)
 		$this->_substituteRecordValues();
-		
-		// Retrieve clean id
-		$recordId = $this->_getPossibleSubstitutedId($id);
-		$record   = $this->getRecordById($recordId);
 
 		$globals = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
 		$GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"] = array_replace($globals, $this->tempColumns);
-
-		if(!$record instanceof RecordModel)
-		{
-			$message  = Locale::translate("record_not_found", $id);
-			$this->addBackendFlashMessage($message);
-			return;
-		}
 
 		if (isset($this->saveData[$id]) && is_array($this->saveData[$id]))
 		{
 			$recordSaveData = reset($this->saveData[$id]);
 
+			// Set the current selected language to the repository
+			$this->recordRepository->setLanguageUid($this->languageUid);
+
+			// Retrieve clean record id and try to load the record
+ 			$recordId = $this->_getPossibleSubstitutedId($id);
+			$record   = $this->getRecordById($recordId);
+			
+			if(!$record instanceof RecordModel)
+			{
+				$message  = Locale::translate("record_not_found", $id);
+				$this->addBackendFlashMessage($message);
+				return;
+			}
+			
 			// Adding the parent id, if the record is not our main record
 			if($id != $this->mainRecordUid)
 				$recordSaveData["parent"] = $this->mainRecordUid;
@@ -629,8 +621,6 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 		return $fieldValidationErrors;
 	}
 
-
-
 	/**
 	 * Transforms the NEW-ID into the
 	 * correct ID if found in Substitute Id Array
@@ -660,6 +650,7 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 			// the database into the uid that shows up here
 			foreach($this->substNEWwithIDs as $_subNew=>$_subId)
 			{
+				$this->recordValueRepository->setLanguageUid($this->languageUid);
 				$recordValues = $this->recordValueRepository->findByValueContent($_subNew);
 
 				foreach($recordValues as $_recordValue)
@@ -688,7 +679,7 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	{
 		// Get datatype
 		$datatype = $record->getDatatype();
-
+		
 		if(!$datatype)
 		{
 			// We try loading the datatype by the recordSaveData Information
@@ -824,7 +815,6 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 
 				if($field->getType() == "rte")
 				{
-				
 					// Initialize transformation:
 					/* @var RteHtmlParser $parseHTML */
 					$parseHTML = GeneralUtility::makeInstance(RteHtmlParser::class);
@@ -834,7 +824,7 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 				}
 			}
 			
-			$result = $this->_saveRecordValue($record, $field, $_value);
+			$result = $this->_saveRecordValue($record, $field, $_value, $this->languageUid);
 
 			if (!$result)
 				$overallResult = false;
@@ -871,22 +861,63 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	 * @param RecordModel $record
 	 * @param FieldModel $field
 	 * @param mixed $value
+	 * @param null|int $languageUid
 	 * @return int
 	 */
-	protected function _saveRecordValue(RecordModel $record, FieldModel $field, $value)
+	protected function _saveRecordValue(RecordModel $record, FieldModel $field, $value, $languageUid = null)
 	{
 		$pid   = $record->getPid();
+		
+		$baseRecord = $record;
+		if($record->getL10nParent() instanceof RecordModel &&
+		   $record->getUid() != $record->getL10nParent()->getUid()
+		) {
+			$baseRecord = $record->getL10nParent();
+		}
 
 		/* @var RecordValueModel $recordValue */
-		$recordValue = $this->recordValueRepository->findOneByRecordAndField($record, $field);
+		// Original record value without translation
+		// This should be found in most of the cases
+		$origRecordValue = $this->recordValueRepository->findOneByRecordAndField($baseRecord, $field);
 
-		if(!$recordValue instanceof RecordValueModel)
-			$recordValue = $this->objectManager->get(RecordValueModel::class);
+		if(!$origRecordValue instanceof RecordValueModel)
+		{
+			// If we haven't found a original recordvalue for the default translation,
+			// we need to create one here and assign all the original default translated data
+			$origRecordValue = $this->objectManager->get(RecordValueModel::class);
+			$origRecordValue->setRecord($baseRecord);
+			$origRecordValue->setField($field);
+			$origRecordValue->setPid($pid);
+			$origRecordValue->set_languageUid(0);
 
-		$recordValue->setRecord($record);
-		$recordValue->setField($field);
-		$recordValue->setPid($pid);
+			// We directly add the original recordvalue to the database
+			$this->recordValueRepository->add($origRecordValue);
+			$this->persistenceManager->persistAll();
+		}
+		
+		$recordValue = $origRecordValue;
+		if($languageUid > 0) 
+		{
+			// We try to find a translated record value
+			$langRecordValue = $this->recordValueRepository->findOneByRecordAndField($record, $field, $languageUid);
 
+			if(!$langRecordValue instanceof RecordValueModel)
+			{
+				// We need to create a new translated recordvalue here, and add the translation details to it
+				$langRecordValue = $this->objectManager->get(RecordValueModel::class);
+				//$langRecordValue = $origRecordValue;
+			}
+
+			$langRecordValue->setRecord($record);
+			$langRecordValue->setField($field);
+			$langRecordValue->setL10nParent($origRecordValue);
+			$langRecordValue->setPid($pid);
+			$langRecordValue->set_languageUid($languageUid);
+			
+			// Use the language recordvalue for the next steps
+			$recordValue = $langRecordValue;
+		}
+		
 		// Defaults
 		$valueContent = $value;
 		$search = $value;
@@ -984,5 +1015,52 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 		}
 
 		return $recordContents;
+	}
+
+	/**
+	 * Removes recordValue by a given record id
+	 * 
+	 * @param int $recordId
+	 * @param null|int $languageUid
+	 * @return void
+	 */
+	protected function _removeRecordValuesByRecordId($recordId, $languageUid = null)
+	{
+		if(!is_null($languageUid))
+			$this->recordValueRepository->setLanguageUid($languageUid);
+
+		$recordValues = $this->recordValueRepository->findByRecordId($recordId);
+		
+		if ($recordValues && $recordValues->count())
+		{
+			// Remove each record value
+			/* @var RecordValueModel $_recordValue */
+			foreach ( $recordValues as $_recordValue )
+			{
+				if($_recordValue->getField() instanceof FieldModel)
+				{
+					// We need to check the fieldtype to do certain delete behaviours here
+					switch ($_recordValue->getField()->getType()) {
+						case "datatype":
+							$ids = GeneralUtility::trimExplode(",", $_recordValue->getValueContent());
+							foreach ($ids as $_id) {
+								$_record = $this->getRecordById($_id);
+								if ($_record) {
+									$_record->setDeleted(true);
+									$this->recordRepository->update($_record);
+								}
+							}
+							break;
+						default:
+							break;
+					}
+					
+					$_recordValue->setDeleted(true);
+					$this->recordValueRepository->update($_recordValue);
+				}
+			}
+		}
+		
+		$this->persistenceManager->persistAll();
 	}
 }

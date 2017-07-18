@@ -21,6 +21,36 @@ abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Reposit
 	protected $limit = 0;
 
 	/**
+	 * Language Uid
+	 * 
+	 * @var int|null
+	 */
+	protected $languageUid = null;
+
+	/**
+	 * AbstractRepository constructor.
+	 *
+	 * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager
+	 */
+	public function __construct(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager)
+	{
+		if( (
+		     !$GLOBALS["TSFE"]->gr_list || 
+		     empty($GLOBALS["TSFE"]->gr_list) || 
+		     is_null($GLOBALS["TSFE"]->gr_list)
+		    ) && TYPO3_MODE == "BE"
+		)
+		{
+			$GLOBALS["TSFE"] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController::class, $TYPO3_CONF_VARS, 0, 0);
+			$GLOBALS["TSFE"]->initFEuser();
+			$GLOBALS["TSFE"]->initUserGroups();
+			//$GLOBALS['TSFE']->gr_list = "";
+		}	
+		parent::__construct($objectManager);
+		
+	}
+
+	/**
 	 * Sets the record limitation
 	 *
 	 * @param int $limit Limit Value
@@ -41,6 +71,14 @@ abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Reposit
 		return (int)$this->limit;
 	}
 
+	/**
+	 * @param int $languageUid
+	 */
+	public function setLanguageUid($languageUid)
+	{
+		$this->languageUid = $languageUid;
+	}
+	
 	/**
 	 * Returns a query for objects of this repository
 	 *
@@ -95,9 +133,9 @@ abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Reposit
 	 * @param int $languageUid
 	 * @return \MageDeveloper\Dataviewer\Domain\Model\AbstractModel
 	 */
-	public function findByUid($uid, $onlyEnabled = true, $languageUid = null)
+	public function findByUid($uid, $onlyEnabled = true)
 	{
-		$query = $this->createQueryWithSettings(false, !$onlyEnabled, false, [], $languageUid);
+		$query = $this->createQueryWithSettings(false, !$onlyEnabled, false, [], $this->languageUid);
 
 		$record = $query->matching(
 			$query->equals("uid", $uid)

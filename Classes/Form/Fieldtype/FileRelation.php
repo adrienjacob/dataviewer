@@ -139,8 +139,8 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 								],
 							],
 							"behaviour" => [
-								"localizationMode" => "select",
-								"localizeChildrenAtParentLocalization" => TRUE,
+								"localizationMode" => "none",
+								"localizeChildrenAtParentLocalization" => false,
 							],
 						],
 					],
@@ -150,6 +150,8 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 			"inlineFirstPid" => $this->getRecord()->getPid(),
 			"inlineResolveExistingChildren" => true,
 			"inlineCompileExistingChildren"=> true,
+			//"defaultLanguageRow" => $databaseRow,
+			"defaultLanguageRow" => null,
 		];
 		
 		$this->prepareTca($tca);

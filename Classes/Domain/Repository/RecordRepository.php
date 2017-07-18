@@ -271,7 +271,8 @@ class RecordRepository extends AbstractRepository
 		$querySettings = $query->getQuerySettings();
 		$querySettings->setRespectStoragePage(!empty($storagePids));
 		$querySettings->setIgnoreEnableFields($includeHidden);
-		$querySettings->setRespectSysLanguage(true);
+		$querySettings->setRespectSysLanguage(false);
+		$querySettings->setLanguageUid($this->languageUid);
 		$query->setQuerySettings($querySettings);
 
 		if(!empty($orderings))
@@ -310,7 +311,8 @@ class RecordRepository extends AbstractRepository
 	{
 		$query = $this->createQuery();
 		$querySettings = $query->getQuerySettings();
-		$querySettings->setRespectSysLanguage(true);
+		$querySettings->setRespectSysLanguage(false);
+		$querySettings->setLanguageUid($this->languageUid);
 
 		if(!empty($storagePids))
 			$querySettings->setStoragePageIds($storagePids);
@@ -319,14 +321,13 @@ class RecordRepository extends AbstractRepository
 
 		$query->setQuerySettings($querySettings);
 		$statement = $this->getStatementByAdvancedConditions($filters, $sortField, $sortOrder, $limit, $storagePids);
-		
 		$query->statement($statement);
+		
 		$result = $query->execute(true);
 		$dataMapper = GeneralUtility::makeInstance(DataMapper::class);
 		$mapped = $dataMapper->map(Record::class, $result);
-
+		
 		return $mapped;
-
 	}
 
 	/**
@@ -341,7 +342,8 @@ class RecordRepository extends AbstractRepository
 	{
 		$query = $this->createQuery();
 		$querySettings = $query->getQuerySettings();
-		$querySettings->setRespectSysLanguage(true);
+		$querySettings->setRespectSysLanguage(false);
+		$querySettings->setLanguageUid($this->languageUid);
 
 		if(!empty($storagePids))
 			$querySettings->setStoragePageIds($storagePids);
@@ -392,7 +394,11 @@ class RecordRepository extends AbstractRepository
 		$statement .= "AND               RECORD.hidden = '0'"."\r\n";
 		$statement .= "AND               RECORDVALUE.deleted = '0'"."\r\n";
 		$statement .= "AND               RECORDVALUE.hidden = '0'"."\r\n";
-
+		
+		// Language 
+		$statement .= "AND               RECORD.sys_language_uid = '{$this->languageUid}'"."\r\n";
+		$statement .= "AND               RECORDVALUE.sys_language_uid = '{$this->languageUid}'"."\r\n";
+		
 		if(!empty($storagePids))
 		{
 			$storagePids = implode(",", $storagePids);

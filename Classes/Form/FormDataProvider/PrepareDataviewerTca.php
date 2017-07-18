@@ -160,7 +160,8 @@ class PrepareDataviewerTca implements FormDataProviderInterface
 			if($datatype instanceof Datatype && $record instanceof Record)
 				$this->prepareProcessedTca($result, $datatype, $record);
 
-            $result['inlineCompileExistingChildren'] = false;
+			$result['inlineCompileExistingChildren'] = false;
+			$result['defaultLanguageRow'] = null;
 		}
 		
 		return $result;

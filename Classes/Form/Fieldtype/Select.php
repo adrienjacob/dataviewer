@@ -110,11 +110,22 @@ class Select extends AbstractFieldtype implements FieldtypeInterface
 		{
 			//foreign_table
 			if($foreignTable = $this->getField()->getConfig("foreign_table"))
+			{
 				$tca["processedTca"]["columns"][$fieldName]["config"]["foreign_table"] = $foreignTable;
+				
+				if(isset($GLOBALS["TCA"][$foreignTable]["ctrl"]["languageField"]))
+				{
+					$languageField = $GLOBALS["TCA"][$foreignTable]["ctrl"]["languageField"];
+					$tca["processedTca"]["columns"][$fieldName]["config"]["foreign_table_where"] .= " AND {$foreignTable}.{$languageField} IN (-1, 0) ";
+				}
+			}
 
 			//foreign_table_where
 			if($foreignTableWhere = $this->getField()->getConfig("foreign_table_where"))
-				$tca["processedTca"]["columns"][$fieldName]["config"]["foreign_table_where"] = $foreignTableWhere;
+			{
+				$tca["processedTca"]["columns"][$fieldName]["config"]["foreign_table_where"] .= " {$foreignTableWhere} ";
+			
+			}
 
 			// Additional items from fieldvalues
 			if((bool)$this->getField()->getConfig("include_field_values_as_options") == true)
@@ -124,6 +135,7 @@ class Select extends AbstractFieldtype implements FieldtypeInterface
 			if((bool)$this->getField()->getConfig("suggest_wizard") == true)
 				$tca["processedTca"]["columns"][$fieldName]["config"]["enableMultiSelectFilterTextfield"] = true;
 		}
+		
 
 		parent::prepareTca($tca);
 	}

@@ -1,7 +1,9 @@
 <?php
+
 namespace MageDeveloper\Dataviewer\LabelUserFunc;
 
 use MageDeveloper\Dataviewer\Utility\LocalizationUtility as Locale;
+use MageDeveloper\Dataviewer\Configuration\ExtensionConfiguration as Config;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -60,13 +62,17 @@ class Record
 	{
 		if(TYPO3_MODE != "BE")
 			return;
-			
+	
 		if (isset($pObj["row"]))
 		{
 			$row = $pObj["row"];
+			$languageField = Config::getRecordsLanguageField();
+			$languageUid = $row[$languageField];
+			
 			$this->backendSessionService->setAccordingPid($row["pid"]);
+			$this->recordRepository->setLanguageUid($languageUid);
 			$record = $this->recordRepository->findByUid($row["uid"], false);
-
+			
 			if ($record instanceof \MageDeveloper\Dataviewer\Domain\Model\Record)
 			{
 				$title = "";

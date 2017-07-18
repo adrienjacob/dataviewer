@@ -3,6 +3,7 @@
 namespace MageDeveloper\Dataviewer\Form\Renderer;
 
 use MageDeveloper\Dataviewer\Utility\LocalizationUtility as Locale;
+use MageDeveloper\Dataviewer\Configuration\ExtensionConfiguration as Config;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Page\PageRenderer;
@@ -59,6 +60,12 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 	 * @inject
 	 */
 	protected $backendAccessService;
+
+	/**
+	 * @var \MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage
+	 * @inject
+	 */
+	protected $extbaseEnforceLanguageService;
 	
 	/**
 	 * Constructor
@@ -72,6 +79,7 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 		$this->fieldRenderer 				= $this->objectManager->get(\MageDeveloper\Dataviewer\Form\Renderer\FieldRenderer::class);
 		$this->recordValueSessionService 	= $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Session\RecordValueSessionService::class);
 		$this->backendAccessService			= $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Backend\BackendAccessService::class);
+		$this->extbaseEnforceLanguageService = $this->objectManager->get(\MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage::class);
 	}
 
 	/**
@@ -97,6 +105,11 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 
 		$row = $params["row"];
 		
+		$languageField = Config::getRecordsLanguageField();
+		$languageUid = reset($row[$languageField]);
+		$this->extbaseEnforceLanguageService->setOverrideLanguage(true);
+		$this->extbaseEnforceLanguageService->setLanguageUid($languageUid);
+
 		// Id of the record
 		$recordUid = $row["uid"];
 		$datatypeUid = (int)reset($row["datatype"]);
@@ -328,6 +341,10 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 		// Resetting the stored record values for cleaing up the
 		// form on the end
 		$this->recordValueSessionService->resetForRecordId($recordUid);
+		
+		// Restore language functionality
+		$this->extbaseEnforceLanguageService->setOverrideLanguage(false);
+
 		//$html = "";
 		return $html;
 	}

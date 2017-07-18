@@ -24,9 +24,9 @@ class RecordValueRepository extends AbstractRepository
 	 * @param Field $field
 	 * @return \MageDeveloper\Dataviewer\Domain\Model\Record|null
 	 */
-	public function findOneByRecordAndField(Record $record, Field $field)
+	public function findOneByRecordAndField(Record $record, Field $field, $languageUid = null)
 	{
-		$query = $this->createQueryWithSettings();
+		$query = $this->createQueryWithSettings(false, true, false,[],$languageUid);
 
 		return $query->matching(
 			$query->logicalAnd(
@@ -35,7 +35,7 @@ class RecordValueRepository extends AbstractRepository
 			)
 		)->execute()->getFirst();
 	}
-	
+
 	/**
 	 * Finds a recordvalue by some parameters
 	 * 
@@ -68,6 +68,11 @@ class RecordValueRepository extends AbstractRepository
 		$querySettings = $query->getQuerySettings();
 		$querySettings->setRespectStoragePage(false);
 
+		if($this->languageUid)
+			$querySettings->setLanguageUid($this->languageUid);
+			
+		$query->setQuerySettings($querySettings);
+
 		return $query->matching($query->like("value_content", "%{$valueContent}%"))->execute();
 	}
 
@@ -84,6 +89,9 @@ class RecordValueRepository extends AbstractRepository
 		$querySettings->setRespectStoragePage(false);
 		$querySettings->setIgnoreEnableFields(true);
 		$querySettings->setRespectSysLanguage(false);
+
+		if($this->languageUid)
+			$querySettings->setLanguageUid($this->languageUid);
 
 		return $query->matching($query->equals("field", $field->getUid()))->execute();
 	}
@@ -102,6 +110,9 @@ class RecordValueRepository extends AbstractRepository
 		$querySettings->setIgnoreEnableFields(true);
 		$querySettings->setRespectSysLanguage(false);
 
+		if($this->languageUid)
+			$querySettings->setLanguageUid($this->languageUid);
+
 		return $query->matching($query->equals("field", $fieldId))->execute();
 	}
 
@@ -119,6 +130,9 @@ class RecordValueRepository extends AbstractRepository
 		$querySettings->setIgnoreEnableFields(true);
 		$querySettings->setRespectSysLanguage(false);
 
+		if($this->languageUid)
+			$querySettings->setLanguageUid($this->languageUid);
+
 		return $query->matching($query->equals("field_value", $fieldValueId))->execute();
 	}
 
@@ -134,7 +148,10 @@ class RecordValueRepository extends AbstractRepository
 		$querySettings = $query->getQuerySettings();
 		$querySettings->setRespectStoragePage(false);
 		$querySettings->setIgnoreEnableFields(true);
-		$querySettings->setRespectSysLanguage(true);
+		$querySettings->setRespectSysLanguage(false);
+
+		if($this->languageUid)
+			$querySettings->setLanguageUid($this->languageUid);
 
 		return $query->matching($query->equals("record", $recordId))->execute();
 	}

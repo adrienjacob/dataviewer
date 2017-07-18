@@ -3,6 +3,7 @@ namespace MageDeveloper\Dataviewer\Form\Fieldtype;
 
 use MageDeveloper\Dataviewer\Domain\Model\Field;
 use MageDeveloper\Dataviewer\Domain\Model\RecordValue;
+use MageDeveloper\Dataviewer\Configuration\ExtensionConfiguration as Config;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -61,7 +62,11 @@ class Datatype extends Inline
 								"showSynchronizationLink" => 1,
 								"showPossibleLocalizationRecords" => 1,
 								"useSortable" => 1,
-								"showAllLocalizationLink" => 1,
+								"showAllLocalizationLink" => 0,
+							],
+							"behaviour" => [
+								"localizationMode" => "none",
+								"localizeChildrenAtParentLocalization" => false,
 							],
 						],
 					],
@@ -71,8 +76,9 @@ class Datatype extends Inline
 			"inlineFirstPid" => $this->getInlineFirstPid(),
 			"inlineResolveExistingChildren" => true,
 			"inlineCompileExistingChildren"=> true,
+			//"defaultLanguageRow" => $databaseRow,
+			"defaultLanguageRow" => null,
 		];
-
 		$this->prepareTca($tca);
 		return $tca;
 	}
