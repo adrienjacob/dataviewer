@@ -51,6 +51,14 @@ class DataHandlingHook
 	protected $recordHandling;
 
 	/**
+	 * RecordValue Data Handling Model
+	 *
+	 * @var \MageDeveloper\Dataviewer\DataHandling\DataHandler\RecordValue
+	 * @inject
+	 */
+	protected $recordValueHandling;
+
+	/**
 	 * Variable Data Handling Model
 	 * 
 	 * @var \MageDeveloper\Dataviewer\DataHandling\DataHandler\Variable
@@ -78,6 +86,7 @@ class DataHandlingHook
 		$this->datatypeHandling		= $this->objectManager->get(\MageDeveloper\Dataviewer\DataHandling\DataHandler\Datatype::class);
 		$this->fieldHandling		= $this->objectManager->get(\MageDeveloper\Dataviewer\DataHandling\DataHandler\Field::class);
 		$this->recordHandling		= $this->objectManager->get(\MageDeveloper\Dataviewer\DataHandling\DataHandler\Record::class);
+		$this->recordValueHandling	= $this->objectManager->get(\MageDeveloper\Dataviewer\DataHandling\DataHandler\RecordValue::class);
 		$this->variableHandling		= $this->objectManager->get(\MageDeveloper\Dataviewer\DataHandling\DataHandler\Variable::class);
 		$this->cacheManager			= $this->objectManager->get(\TYPO3\CMS\Core\Cache\CacheManager::class);
 	}
@@ -94,6 +103,7 @@ class DataHandlingHook
 		$this->datatypeHandling->processCmdmap_deleteAction($table, $id, $recordToDelete, $recordWasDeleted, $parentObj);
 		$this->fieldHandling->processCmdmap_deleteAction($table, $id, $recordToDelete, $recordWasDeleted, $parentObj);
 		$this->recordHandling->processCmdmap_deleteAction($table, $id, $recordToDelete, $recordWasDeleted, $parentObj);
+		$this->recordValueHandling->processCmdmap_deleteAction($table, $id, $recordToDelete, $recordWasDeleted, $parentObj);
 		$this->variableHandling->processCmdmap_deleteAction($table, $id, $recordToDelete, $recordWasDeleted, $parentObj);
 	}
 
@@ -109,6 +119,7 @@ class DataHandlingHook
 		$this->datatypeHandling->processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, $parentObj);
 		$this->fieldHandling->processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, $parentObj);
 		$this->recordHandling->processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, $parentObj);
+		$this->recordValueHandling->processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, $parentObj);
 		$this->variableHandling->processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, $parentObj);
 	}
 
@@ -140,6 +151,7 @@ class DataHandlingHook
 		$this->datatypeHandling->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $parentObj);
 		$this->fieldHandling->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $parentObj);
 		$this->recordHandling->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $parentObj);
+		$this->recordValueHandling->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $parentObj);
 		$this->variableHandling->processDatamap_preProcessFieldArray($incomingFieldArray, $table, $id, $parentObj);
 	}
 
@@ -153,6 +165,7 @@ class DataHandlingHook
     public function processDatamap_postProcessFieldArray($status, $table, $id, $fieldArray, &$parentObj)
     {
         $this->recordHandling->processDatamap_postProcessFieldArray($status, $table, $id, $fieldArray, $parentObj);
+		$this->recordValueHandling->processDatamap_postProcessFieldArray($status, $table, $id, $fieldArray, $parentObj);
     }
 
 	/**
@@ -171,6 +184,7 @@ class DataHandlingHook
 		$this->datatypeHandling->processCmdmap($command, $table, $id, $value, $commandIsProcessed, $parentObj, $pasteUpdate);
 		$this->fieldHandling->processCmdmap($command, $table, $id, $value, $commandIsProcessed, $parentObj, $pasteUpdate);
 		$this->recordHandling->processCmdmap($command, $table, $id, $value, $commandIsProcessed, $parentObj, $pasteUpdate);
+		$this->recordValueHandling->processCmdmap($command, $table, $id, $value, $commandIsProcessed, $parentObj, $pasteUpdate);
 		$this->variableHandling->processCmdmap($command, $table, $id, $value, $commandIsProcessed, $parentObj, $pasteUpdate);
 	}
 
