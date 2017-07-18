@@ -16,7 +16,7 @@
                             <label></label>
                             <config>
                                 <type>user</type>
-                                <userFunc>MageDeveloper\Dataviewer\UserFunc\Logo->displayLogoText</userFunc>
+                                <userFunc>MageDeveloper\Dataviewer\UserFunc\Logo->displayLogoAndMessageOnEmptyRecordStoragePage</userFunc>
                             </config>
                         </TCEforms>
                     </settings.logo>
