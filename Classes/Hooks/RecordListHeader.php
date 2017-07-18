@@ -158,7 +158,9 @@ class RecordListHeader implements RecordListHookInterface
 					foreach($fields as $_field)
 					{
 						$label = "[{$_field->getPid()}] " . strtoupper($_field->getType()) . ": " . $_field->getFrontendLabel();
-						$sortByOptions[$_field->getUid()] = $label;
+						//$sortByOptions[$_field->getUid()] = $label;
+						
+						// TODO: re-enable this when the subselect bug is fixes
 					}
 				}
 			}
