@@ -56,6 +56,17 @@ class RecordValue extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 	protected $search;
 
 	/**
+	 * _languageUid
+	 * @var int
+	 */
+	protected $_languageUid;
+
+	/**
+	 * @var \MageDeveloper\Dataviewer\Domain\Model\RecordValue
+	 */
+	protected $l10nParent;
+
+	/**
 	 * Returns the valueContent
 	 *
 	 * @return string $valueContent
@@ -168,5 +179,41 @@ class RecordValue extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 	public function setSearch($search)
 	{
 		$this->search = $search;
+	}
+
+	/**
+	 * @param int $_languageUid
+	 * @return void
+	 */
+	public function set_languageUid($_languageUid)
+	{
+		$this->_languageUid = $_languageUid;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function get_languageUid()
+	{
+		return $this->_languageUid;
+	}
+
+	/**
+	 * Set l10n parent
+	 *
+	 * @param \MageDeveloper\Dataviewer\Domain\Model\RecordValue $l10nParent
+	 */
+	public function setL10nParent(\MageDeveloper\Dataviewer\Domain\Model\RecordValue $l10nParent)
+	{
+		$this->l10nParent = $l10nParent;
+	}
+	/**
+	 * Get l10n parent
+	 *
+	 * @return \MageDeveloper\Dataviewer\Domain\Model\RecordValue
+	 */
+	public function getL10nParent()
+	{
+		return $this->l10nParent;
 	}
 }
