@@ -114,7 +114,7 @@ class Logo
 	{
 		$row = $config["row"];
 		
-		if(!isset($row["pages"]) && $row["pages"] != "")
+		if(!isset($row["pages"]) || $row["pages"] == "")
 		{
 			$message = LocalizationUtility::translate("message.no_record_storage_page_configured");
 			$config["parameters"]["message"] = $message;
