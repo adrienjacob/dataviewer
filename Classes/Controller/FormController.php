@@ -92,11 +92,15 @@ class FormController extends AbstractController
 	/**
 	 * Gets a new record instance
 	 * 
+	 * @throws \MageDeveloper\Dataviewer\Exception\NoDatatypeException
 	 * @return \MageDeveloper\Dataviewer\Domain\Model\Record
 	 */
 	protected function _getNewRecord()
 	{
 		$datatype = $this->_getSelectedDatatype();
+		
+		if(!$datatype instanceof \MageDeveloper\Dataviewer\Domain\Model\Datatype)
+			throw new \MageDeveloper\Dataviewer\Exception\NoDatatypeException("No datatype selected");
 		
 		/* @var Record $record */
 		$record = $this->objectManager->get(Record::class);
@@ -117,19 +121,38 @@ class FormController extends AbstractController
 	 */
 	public function indexAction(\MageDeveloper\Dataviewer\Domain\Model\Record $record = null)
 	{
-		$templateFile = $this->formSettingsService->getTemplateOverride();
-		$template = GeneralUtility::getFileAbsFileName($templateFile);
+		if($this->settings["debug"])
+		{
+			$standaloneView = $this->getStandaloneView(true);
+			return $standaloneView->renderSource("<f:debug inline=\"1\">{_all}</f:debug>");
+		}
+		
+		if($this->settings["template_selection"] == "FLUID")
+		{
+			$view = $this->view;
+			$source = $this->settings["fluid_code"];
+			$view->setTemplateSource($source);
+		}
+		else
+		{
+			$view = $this->getStandaloneView(true);
+			$templateSwitch = $this->getTemplateSwitch();
+			
+			if($templateSwitch)
+				$view->setTemplatePathAndFilename($templateSwitch);
+		}
 		
 		if(!$record instanceof Record)
 			$record = $this->_getNewRecord();
 
         // Retrieving possible previous stored form post data
-        $post = $this->sessionService->getFormPost($post);
+        $post = $this->sessionService->getFormPost();
 
-        $this->view->assign("session", $post);
-		$this->view->assign("datatype", $record->getDatatype());
-		$this->view->assign("template", $template);
-		$this->view->assign("record", $record);
+		$view->assign("session", $post);
+		$view->assign("datatype", $record->getDatatype());
+		$view->assign("record", $record);
+		
+		return $view->render();
 	}
 
 	/**
@@ -445,7 +468,7 @@ class FormController extends AbstractController
 	 */
 	protected function _getSelectedDatatype()
 	{
-		$datatypeId = $this->formSettingsService->getSelectedDatatypeIds();
+		$datatypeId = (int)$this->settings["datatype_selection"];
 		$datatype = $this->datatypeRepository->findByUid($datatypeId, true);
 		
 		if($datatype instanceof \MageDeveloper\Dataviewer\Domain\Model\Datatype)
