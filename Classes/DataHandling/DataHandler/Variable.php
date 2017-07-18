@@ -18,7 +18,7 @@ use TYPO3\CMS\Core\Messaging\FlashMessage;
 class Variable extends AbstractDataHandler implements DataHandlerInterface
 {
 	/**
-	 * Field Repository
+	 * Variable Repository
 	 *
 	 * @var \MageDeveloper\Dataviewer\Domain\Repository\VariableRepository
 	 * @inject
