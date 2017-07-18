@@ -10,6 +10,16 @@
 Changelog
 ---------
 
+**2.1.0**
+
+- [FEATURE] Selectable Templates for Form Plugin
+- [TASK] Language compatibility (still under development)
+- [BUGFIX] Missing Storage Page Message
+- [TASK] Removed Sorting by Fields in List Module because Bug #80874
+- [TASK] Composer preparation
+- [BUGFIX] Icons declaration for Plugins
+- [TASK] Smaller Box in FieldValue content field
+
 **2.0.2**
 
 - [BUGFIX] Inline Elements won't work
