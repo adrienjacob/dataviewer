@@ -104,6 +104,34 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 * @inject
 	 */
 	protected $cacheManager;
+
+	/**
+	 * Session Service Container
+	 *
+	 * @var \MageDeveloper\Dataviewer\Service\Session\SessionServiceContainer
+	 * @inject
+	 */
+	protected $sessionServiceContainer;
+	
+	/**
+	 * Gets the session service
+	 *
+	 * @return \MageDeveloper\Dataviewer\Service\Session\SessionService
+	 */
+	public function getSessionService()
+	{
+		return $this->sessionService;
+	}
+
+	/**
+	 * Gets the session service container
+	 *
+	 * @return \MageDeveloper\Dataviewer\Service\Session\SessionServiceContainer
+	 */
+	public function getSessionServiceContainer()
+	{
+		return $this->sessionServiceContainer;
+	}
 	
 	/**
 	 * Gets the extension name
@@ -363,26 +391,6 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	}
 
 	/**
-	 * Override of view initialization
-	 * 
-	 * @param ViewInterface $view
-	 * @return void
-	 */
-	protected function initializeView(ViewInterface $view)
-	{
-		$cObj = $this->configurationManager->getContentObject();
-			
-		if ($cObj instanceof \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer)
-		{
-			$this->view->assign("cObj", $cObj->data);
-			$this->uid = $cObj->data["uid"];
-		}
-
-		$this->view->assign("baseUrl", $GLOBALS["TSFE"]->baseURL);
-		parent::initializeView($view); 
-	}
-
-	/**
 	 * Checks if the request has dataviewer arguments
 	 * at all
 	 * 
@@ -398,5 +406,184 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 				return true;
 		
 		return false;
+	}
+
+	/**
+	 * Gets a standalone view instance
+	 *
+	 * @return \MageDeveloper\Dataviewer\Fluid\View\StandaloneView
+	 */
+	protected function getStandaloneView($includeVariables = false)
+	{
+		$view = $this->objectManager->get(\MageDeveloper\Dataviewer\Fluid\View\StandaloneView::class);
+
+		if($includeVariables === true)
+		{
+			$pids = $this->storagePids;
+
+			// Merging with template variables from the current page
+			if(is_int($GLOBALS["TSFE"]->id))
+				$pids[] = $GLOBALS["TSFE"]->id;
+
+			$variables = $this->variableRepository->findByStoragePids($pids);
+			$ids = [];
+
+			foreach($variables as $_v)
+				$ids[] = $_v->getUid();
+
+			$variables = $this->prepareVariables($ids);
+			$view->assignMultiple($variables);
+		}
+
+		// Assign settings to the view
+		$view->assign("settings", $this->settings);
+
+		return $view;
+	}
+
+	/**
+	 * Replaces all markers in a given string
+	 *
+	 * @param string $string
+	 * @return void
+	 */
+	protected function _replaceMarkersInString($string)
+	{
+		return $this->getStandaloneView(true)->renderSource($string);
+	}
+
+	/**
+	 * Replaces all markers in filters
+	 *
+	 * @param array $filters
+	 * @return void
+	 */
+	protected function _replaceMarkersInFilters(array &$filters)
+	{
+		foreach($filters as $i=>$_filter)
+			$filters[$i]["field_value"] = $this->_replaceMarkersInString($_filter["field_value"]);
+	}
+
+	/**
+	 * Gets the content uid
+	 *
+	 * @return int
+	 */
+	protected function _getContentUid()
+	{
+		$uid = 0;
+		$contentObj = $this->configurationManager->getContentObject();
+
+		if ($contentObj)
+			$uid = $contentObj->data["uid"];
+
+		return (int)$uid;
+	}
+
+	/**
+	 * initializeView
+	 * Initializes the view
+	 *
+	 * Adds some variables to view that could always
+	 * be useful
+	 *
+	 * @param ViewInterface $view
+	 * @return void
+	 */
+	protected function initializeView(ViewInterface $view)
+	{
+		// Individual session key
+		$uid = $this->_getContentUid();
+		$this->sessionServiceContainer->setTargetUid($uid);
+
+		$cObj = $this->configurationManager->getContentObject();
+		if ($cObj instanceof \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer)
+			$this->view->assign("cObj", $cObj->data);
+
+		// Allowed Storage Pids
+		$pageData = $cObj->data;
+		$this->storagePids = GeneralUtility::trimExplode(",", $pageData["pages"], true);
+
+		// Rendering custom fluid code, given in the records plugin
+		// For this, we just replace the default view model
+		// with our custom view and put some stuff in it
+		if($this->pluginSettingsService->isCustomFluidCode())
+		{
+			// Assigning the custom view model as general
+			$this->view = $this->getStandaloneView(false);
+
+			$templateSource = $this->pluginSettingsService->getFluidCode();
+
+			// Checking Debug
+			if($this->pluginSettingsService->isDebug())
+				$templateSource = "<f:debug inline=\"1\">{_all}</f:debug>".$templateSource;
+
+			$templateSwitch = $this->getTemplateSwitch();
+			if($templateSwitch)
+				$this->view->setTemplatePathAndFilename($templateSwitch);
+			else
+				$this->view->setTemplateSource($templateSource);
+
+		}
+
+		// Adding variables to the view
+		$pids = $this->storagePids;
+
+		// Merging with template variables from the current page
+		if(is_int($GLOBALS["TSFE"]->id))
+			$pids[] = $GLOBALS["TSFE"]->id;
+
+		$variables = $this->variableRepository->findByStoragePids($pids);
+		$ids = $this->pluginSettingsService->getSelectedVariableIds();
+		foreach($variables as $_v)
+			$ids[] = $_v->getUid();
+
+		$variables = $this->prepareVariables($ids);
+		$this->view->assignMultiple($variables);
+		
+		// Inject current settings to the settings service
+		$this->pluginSettingsService->setSettings($this->settings);
+
+		// Add the baseURL to the view
+		$this->view->assign("baseUrl", $GLOBALS["TSFE"]->baseURL);
+
+		// Parent
+		parent::initializeView($view);
+	}
+
+	/**
+	 * Evaluations the conditions for a template switch
+	 * and returns the evaluated template path that
+	 * can be used
+	 *
+	 * @return string
+	 */
+	public function getTemplateSwitch()
+	{
+		// Evaluation the template switch conditions
+		$conditions = $this->pluginSettingsService->getTemplateSwitchConditions();
+
+		// Get a view with all injected variables
+		$view = $this->getStandaloneView(true);
+
+		foreach($conditions as $_condition)
+		{
+			$conditionStr = $_condition["switches"]["condition"];
+			$templateId = $_condition["switches"]["template_selection"];
+
+			// Since we yet do not know how to render the nodes separately, we
+			// just render a simple full fluid condition here
+			$conditionText = "<f:if condition=\"{$conditionStr}\">1</f:if>";
+			$isValid = (bool)$view->renderSource($conditionText);
+
+			if($isValid)
+				return $this->pluginSettingsService->getPredefinedTemplateById($templateId);
+
+		}
+
+		if ($this->pluginSettingsService->hasTemplate() && !$this->pluginSettingsService->isDebug())
+			return $this->pluginSettingsService->getTemplate();
+
+		return;
 	}
 }
