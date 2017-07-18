@@ -163,6 +163,9 @@
             <trans-unit id="tx_dataviewer_domain_model_recordvalue.value_content">
                 <source>Value Content</source>
             </trans-unit>
+            <trans-unit id="tx_dataviewer_domain_model_recordvalue.search">
+                <source>Search Content</source>
+            </trans-unit>
             <trans-unit id="tx_dataviewer_domain_model_recordvalue.record">
                 <source>Record</source>
             </trans-unit>
