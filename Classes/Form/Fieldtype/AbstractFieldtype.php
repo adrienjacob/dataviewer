@@ -271,16 +271,20 @@ abstract class AbstractFieldtype
 
 		// requestUpdate
 		if($requestUpdate = $this->getField()->getRequestUpdate())
-			$tca["processedTca"]["ctrl"]["requestUpdate"] = $fieldName;
+			$tca["processedTca"]["columns"][$fieldName]["onChange"] = "reload";
 
 		//displayCond Display Conditions
 		if($displayCond = $this->getField()->getDisplayCond())
 			$tca["processedTca"]["columns"][$fieldName]["displayCond"] = $displayCond;
 
+
+		//$tca["processedTca"]["columns"][$fieldName]["displayCond"] = "FIELD:3:=:Value 2";
+
 		foreach($this->formDataProviders as $fdp)
 			$tca = $fdp->addData($tca);
 
-		$GLOBALS['TSFE']->gr_list = $grList;
+		if(!is_null($grList))
+			$GLOBALS['TSFE']->gr_list = $grList;
 	}
 
 	/**
@@ -635,6 +639,26 @@ abstract class AbstractFieldtype
 	}
 
 	/**
+	 * Gets the inline first pid setting
+	 * for determe the pid of which the
+	 * records shall be stored
+	 *
+	 * @return int
+	 */
+	protected function getInlineFirstPid()
+	{
+		if($this->getField()->getConfig("pid_config") > 0)
+			return (int)$this->getField()->getConfig("pid_config");
+
+		if($this->getRecord()->getPid() > 0)
+			return $this->getRecord()->getPid();
+
+		$edit = GeneralUtility::_GET("edit");
+		if(isset($edit["tx_dataviewer_domain_model_record"]))
+			return (int)key($edit["tx_dataviewer_domain_model_record"]);
+	}
+
+	/**
 	 * Renders a field
 	 *
 	 * @return array
@@ -645,14 +669,17 @@ abstract class AbstractFieldtype
 		$message = "";
 
 		try {
-
 			$tca = $this->buildTca();
+			
+			// This is a displayCond speed fix, when the column wasn't processed,
+			// we just return a empty string here in order to remove this field
+			if(empty($tca["processedTca"]["columns"]))
+				return "";
 
-		} catch (\Exception $e)
-		{
+		} catch (\Exception $e) {
 			// Exception is here
 			$this->overrideValue = true;
-			$tca = $this->buildTca();
+			//$tca = $this->buildTca();
 
 			$message = "<div class=\"alert alert-danger\" role=\"alert\">{$e->getMessage()}<br />{$e->getFile()}:{$e->getLine()}</div><br />";
 		}
