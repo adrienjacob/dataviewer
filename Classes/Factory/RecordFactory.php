@@ -115,6 +115,11 @@ class RecordFactory implements SingletonInterface
 			$record->setPid($fieldArray["pid"]);
 			unset($fieldArray["pid"]);
 		}
+		else
+		{
+			// Fallback for pid of the datatype pid
+			$fieldArray["pid"] = $datatype->getPid();
+		}
 
 		// Traverse the data into the relevant fieldId=>value information
 		if ($traverse)
@@ -159,15 +164,25 @@ class RecordFactory implements SingletonInterface
 			$traversedFieldArray = $this->traverseFieldArray($updateFieldArray, $record->getDatatype());
 		else
 			$traversedFieldArray = $updateFieldArray;
+			
+		$recordValues = $record->getRecordValues();
+
+		$originalRecordFieldArray = [];
+		foreach($recordValues as $_recordValue) {
+			/* @var RecordValue $_recordValue */
+			$originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
+		}
+
+		$fieldArray = array_replace($originalRecordFieldArray, $traversedFieldArray);
 
 		// Check for validation errors
-		$this->validationErrors = $this->recordDataHandler->validateFieldArray($traversedFieldArray, $record->getDatatype());
+		$this->validationErrors = $this->recordDataHandler->validateFieldArray($fieldArray, $record->getDatatype());
 
 		// We hide the record on any error
 		if(!empty($this->validationErrors))
 			$record->setHidden(true);
 
-		$result = $this->recordDataHandler->processRecord($traversedFieldArray, $record);
+		$result = $this->recordDataHandler->processRecord($fieldArray, $record);
 
 		return $record;
 	}
@@ -236,7 +251,7 @@ class RecordFactory implements SingletonInterface
 	 * Traverses a given fieldarray and combines the values with
 	 * the correct field ids
 	 *
-	 * @oaram array $fieldArray
+	 * @param array $fieldArray
 	 * @param Datatype $datatype
 	 * @return array
 	 */
