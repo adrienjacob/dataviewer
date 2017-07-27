@@ -514,64 +514,63 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 		$globals = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
 		$GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"] = array_replace($globals, $this->tempColumns);
 
-		if (isset($this->saveData[$id]) && is_array($this->saveData[$id]))
-		{
-			$recordSaveData = reset($this->saveData[$id]);
+		if (isset($this->saveData[$id]) && is_array($this->saveData[$id])) {
+            $recordSaveData = reset($this->saveData[$id]);
 
-			// Set the current selected language to the repository
-			$this->recordRepository->setLanguageUid($this->languageUid);
+            // Set the current selected language to the repository
+            $this->recordRepository->setLanguageUid($this->languageUid);
 
-			// Retrieve clean record id and try to load the record
- 			$recordId = $this->_getPossibleSubstitutedId($id);
-			$record   = $this->getRecordById($recordId);
-			
-			if(!$record instanceof RecordModel)
-			{
-				$message  = Locale::translate("record_not_found", $id);
-				$this->addBackendFlashMessage($message);
-				return;
-			}
-			
-			// Adding the parent id, if the record is not our main record
-			if($id != $this->mainRecordUid)
-				$recordSaveData["parent"] = $this->mainRecordUid;
+            // Retrieve clean record id and try to load the record
+            $recordId = $this->_getPossibleSubstitutedId($id);
+            $record = $this->getRecordById($recordId);
 
-			$result   = $this->processRecord($recordSaveData, $record);
-			$message  = Locale::translate("record_not_saved");
-			$severity = FlashMessage::ERROR;
+            if (!$record instanceof RecordModel) {
+                $message = Locale::translate("record_not_found", $id);
+                $this->addBackendFlashMessage($message);
+                return;
+            }
 
-			if ($result)
-			{
-				// Language Selector Box compatibility
-				// TODO: this has to be reviewed directly
-				if(array_key_exists("sys_language_uid", $fieldArray))
-					$record->_setProperty("_languageUid", $fieldArray["sys_language_uid"]);
+            // Adding the parent id, if the record is not our main record
+            if ($id != $this->mainRecordUid)
+                $recordSaveData["parent"] = $this->mainRecordUid;
 
-				// Save processed data
-				$this->recordRepository->update($record);
-				$this->persistenceManager->persistAll();
+            $result = $this->processRecord($recordSaveData, $record);
+            $message = Locale::translate("record_not_saved");
+            $severity = FlashMessage::ERROR;
 
-				$message  = Locale::translate("record_was_successfully_saved", [$record->getTitle(), $recordId]);
-				$severity = FlashMessage::OK;
-				
-				// We clear the according session data
-				$this->recordValueSessionService->resetForRecordId($id);
-			}
-			else
-			{
-				if($record)
-				{
-					$record->setHidden(true);
-					$this->recordRepository->update($record);
-					$this->persistenceManager->persistAll();
-				}
-			}
+            if ($result) {
+                // Language Selector Box compatibility
+                // TODO: this has to be reviewed directly
+                if (array_key_exists("sys_language_uid", $fieldArray))
+                    $record->_setProperty("_languageUid", $fieldArray["sys_language_uid"]);
 
-			// We only deliver a message, when 
-			if(!$record->getDatatype()->getHideRecords() || $severity != FlashMessage::OK)
-				$this->addBackendFlashMessage($message, '', $severity);
+                // Save processed data
+                $this->recordRepository->update($record);
+                $this->persistenceManager->persistAll();
 
-		}
+                // This message is only for main records and not for sub-records like inline elements
+                $message = Locale::translate("record_was_successfully_saved", [$record->getTitle(), $recordId]);
+                $severity = FlashMessage::OK;
+
+                // We clear the according session data
+                $this->recordValueSessionService->resetForRecordId($id);
+            } else {
+                if ($record) {
+                    $record->setHidden(true);
+                    $this->recordRepository->update($record);
+                    $this->persistenceManager->persistAll();
+                }
+            }
+
+            if ($id == $this->mainRecordUid || $severity != FlashMessage::OK) {
+
+                // We only deliver a message, when the record is our main record,
+                // or we have errors
+                if (!$record->getDatatype()->getHideRecords() || $severity != FlashMessage::OK)
+                    $this->addBackendFlashMessage($message, '', $severity);
+
+            }
+        }
 
 		return;
 	}
@@ -690,6 +689,10 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 
 		if(!$datatype)
 			return false;
+
+		// Setting the parent record here	
+		if(isset($recordSaveData["parent"]))
+			$record->_setProperty("parent", (int)$recordSaveData["parent"]);
 
 		// Refresh record timestamp
 		$record->setTstamp(time());
