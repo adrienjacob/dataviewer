@@ -273,6 +273,9 @@ class BackendCsvAssistantController extends BackendController
 			$log[$i]["messages"] = [];
 			$log[$i]["recordId"] = null;
 			$log[$i]["hasErrors"] = null;
+			
+			// Adding the current page id
+			$_fieldArr["pid"] = $this->currentPageId;
 
 			/////////////////////////////////////////////////////////////////////
 			// We need a Signal/Slot here to modify the input field array for  //
@@ -292,6 +295,7 @@ class BackendCsvAssistantController extends BackendController
 					&$datatype,
 				]
 			);
+
 
 			// Main Record Creation from the source of a field array
 			$record = $this->recordFactory->create($_fieldArr, $datatype, false, $importValidationFailed);
