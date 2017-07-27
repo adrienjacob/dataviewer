@@ -225,12 +225,10 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 			{
 				// We only generate to field content if
 				// we found field values
-				try 
-				{
+				try {
 					$renderResults = $this->fieldRenderer->render();
 				} 
-				catch (\Exception $e)
-				{
+				catch (\Exception $e) {
 					$fieldHtml .= "<br /><div class=\"alert alert-danger\" role=\"alert\">{$e->getMessage()}<br />{$e->getFile()}:{$e->getLine()}</div>";
 				}
 				if (is_array($renderResults))

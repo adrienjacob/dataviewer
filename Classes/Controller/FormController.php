@@ -173,7 +173,7 @@ class FormController extends AbstractController
 		$GLOBALS['LANG']->csConvObj = $this->objectManager->get(CharsetConverter::class);
 		if(!$GLOBALS["BE_USER"])
 		{
-			/** @var $backendUser \TYPO3\CMS\Core\Authentication\BackendUserAuthentication */
+			/* @var $backendUser \TYPO3\CMS\Core\Authentication\BackendUserAuthentication */
 			$backendUser = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication::class);
 			$GLOBALS['BE_USER'] = $backendUser;
 			$backendUser->start();

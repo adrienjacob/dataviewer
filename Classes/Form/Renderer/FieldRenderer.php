@@ -265,7 +265,7 @@ class FieldRenderer extends AbstractRenderer implements RendererInterface
 		/* @var \MageDeveloper\Dataviewer\Domain\Model\Fieldtype $fieldtype */
 		$fieldtypeConfiguration = FieldtypeConfigurationUtility::getFieldtypeConfiguration($this->getField()->getType());
 		$fieldClass = $fieldtypeConfiguration->getFieldClass();
-
+		
 		/* @var $fieldObj \MageDeveloper\Dataviewer\Form\Fieldtype\AbstractFieldtype */
 		if ($fieldClass == "" || !$this->objectManager->isRegistered($fieldClass))
 		{

@@ -82,5 +82,4 @@ class Datatype extends Inline
 		$this->prepareTca($tca);
 		return $tca;
 	}
-
 }
