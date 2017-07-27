@@ -269,10 +269,6 @@ class RecordController extends AbstractController
 
 		$this->sessionServiceContainer->getInjectorSessionService()->setActiveRecordIds($activeRecordIds);
 
-		// Override by datatype template setting
-		if ($record->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
-			$this->view->setTemplatePathAndFilename($record->getDatatype()->getTemplatefile());
-
 		// Custom Headers
 		$customHeaders = $this->getCustomHeaders();
 		$this->performCustomHeaders($customHeaders);
@@ -292,6 +288,10 @@ class RecordController extends AbstractController
 			if($templateSwitch)
 				$view->setTemplatePathAndFilename($templateSwitch);
 		}
+
+		// Override by datatype template setting
+		if ($record->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
+			$view->setTemplatePathAndFilename($record->getDatatype()->getTemplatefile());
 
 		// Assigning the record to the view	
 		$view->assign($this->listSettingsService->getRecordVarName(), $record);
@@ -363,14 +363,6 @@ class RecordController extends AbstractController
 
 		if (!$recordObj instanceof Record)
 			$recordObj = null;
-		else
-			if ($recordObj->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
-				$this->view->setTemplatePathAndFilename($recordObj->getDatatype()->getTemplatefile());
-
-		// Template Override by plugin setting
-		$templateSwitch = $this->getTemplateSwitch();
-		if($templateSwitch)
-			$this->view->setTemplatePathAndFilename($templateSwitch);
 
 		// We set this record as currently active
 		$activeRecordIds = [];
@@ -378,6 +370,30 @@ class RecordController extends AbstractController
 			$activeRecordIds = [$recordObj->getUid()];
 
 		$this->sessionServiceContainer->getInjectorSessionService()->setActiveRecordIds($activeRecordIds);
+
+		// Custom Headers
+		$customHeaders = $this->getCustomHeaders();
+		$this->performCustomHeaders($customHeaders);
+
+		if($this->settings["template_selection"] == "FLUID")
+		{
+			$view = $this->view;
+
+			$source = $this->settings["fluid_code"];
+			$view->setTemplateSource($source);
+		}
+		else
+		{
+			$view = $this->getStandaloneView(true);
+
+			$templateSwitch = $this->getTemplateSwitch();
+			if($templateSwitch)
+				$view->setTemplatePathAndFilename($templateSwitch);
+		}
+
+		// Override by datatype template setting
+		if ($recordObj->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
+			$view->setTemplatePathAndFilename($recordObj->getDatatype()->getTemplatefile());
 
 		////////////////////////////////////////////////////
 		// We need to obtain the selected records for
@@ -387,7 +403,7 @@ class RecordController extends AbstractController
 		// We obtain the cache lifetime from the configuration
 		$lifetime = $this->listSettingsService->getCacheLifetime();
 		$cachedIds = $this->pluginCacheService->getValidRecordIds($cacheIdentifier);
-		
+
 		if(is_array($cachedIds))
 		{
 			$ids = $cachedIds;	// We get the valid record ids from the cache
@@ -409,18 +425,15 @@ class RecordController extends AbstractController
 			return;
 
 		// Get selected records and check if the record is allowed
-		$this->view->assign($this->listSettingsService->getRecordVarName(), $recordObj);
+		$view->assign($this->listSettingsService->getRecordVarName(), $recordObj);
 
-		// Custom Headers
-		$customHeaders = $this->getCustomHeaders();
-		$this->performCustomHeaders($customHeaders);
-
-	
 		if($this->listSettingsService->renderOnlyTemplate() && !$this->listSettingsService->isDebug())
 		{
-			echo $this->view->render();
+			echo $view->render();
 			exit();
 		}
+
+		return $view->render();
 	}
 
 	/**
