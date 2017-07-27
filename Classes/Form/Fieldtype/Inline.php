@@ -148,6 +148,38 @@ class Inline extends AbstractFieldtype implements FieldtypeInterface
 		if($size = $this->getField()->getConfig("size"))
 			$tca["processedTca"]["columns"][$fieldName]["config"]["size"] = $size;
 
+		//show_thumbs
+		if($showThumbs = $this->getField()->getConfig("show_thumbs"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["show_thumbs"] = $showThumbs;
+
+		//multiple
+		if($multiple = $this->getField()->getConfig("multiple"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["multiple"] = (int)$multiple;
+
+		//selectedListStyle
+		if($selectedListStyle = $this->getField()->getConfig("selectedListStyle"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["selectedListStyle"] = $selectedListStyle;
+
+		//allowed
+		if($allowed = $this->getField()->getConfig("allowed"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["allowed"] = $allowed;
+
+		//disallowed
+		if($disallowed = $this->getField()->getConfig("disallowed"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["disallowed"] = $disallowed;
+
+		//max_size
+		if($max_size = $this->getField()->getConfig("max_size"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["max_size"] = $max_size;
+
+		//hideMoveIcons
+		if($hideMoveIcons = $this->getField()->getConfig("hideMoveIcons"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["hideMoveIcons"] = (int)$hideMoveIcons;
+
+		//disable_controls
+		if($disable_controls = $this->getField()->getConfig("disable_controls"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["disable_controls"] = $disable_controls;
+
 		parent::prepareTca($tca);
 	}
 
