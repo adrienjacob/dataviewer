@@ -19,6 +19,8 @@ Changelog
 - [TASK] Composer preparation
 - [BUGFIX] Icons declaration for Plugins
 - [TASK] Smaller Box in FieldValue content field
+- [BUGFIX] Now showing records on Pid 0
+- [BUGFIX] Corrected Pid of new file relations when creating a new record
 
 **2.0.2**
 
