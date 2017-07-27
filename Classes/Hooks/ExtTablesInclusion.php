@@ -1,6 +1,7 @@
 <?php
 namespace MageDeveloper\Dataviewer\Hooks;
 
+use MageDeveloper\Dataviewer\Domain\Model\Field;
 use MageDeveloper\Dataviewer\Utility\LocalizationUtility;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Package\PackageManager;
@@ -8,10 +9,14 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * This class processes select/multiselect fields with the suggest wizard active
- * to inject the field configuration into the GLOBALS.
+ * This class generates the whole tca information for all fields and adds the
+ * generated tca information to the globals of the table 'tx_dataviewer_domain_model_record'
  *
- * This helps to run the default SuggestWizard without any additional configuration
+ * This helps e.g. to run the default SuggestWizard without any additional configuration
+ * or to prevent strange errors later.
+ *
+ * The TCA that is generated here and stored into the GLOBALS are compliant to the
+ * TCA structure of TYPO3 fields.
  */
 
 /**
@@ -75,13 +80,15 @@ class ExtTablesInclusion implements \TYPO3\CMS\Core\Database\TableConfigurationP
 		$this->objectManager    = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
 		$this->fieldRepository	= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\FieldRepository::class);
 		$this->recordRepository = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordRepository::class);
-
 		$this->fieldtypeSettingsService = $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService::class);
 	}
 
 	/**
 	 * Function which may process data created / registered by extTables
 	 * scripts (f.e. modifying TCA data of all extensions)
+	 *
+	 * This method generates the whole tca information of dataviewer fields
+	 * and stores the generated information to the GLOBALS
 	 *
 	 * @return void
 	 */
@@ -91,85 +98,66 @@ class ExtTablesInclusion implements \TYPO3\CMS\Core\Database\TableConfigurationP
 		if (TYPO3_MODE !== "BE") {
 			return;
 		}
-	
-		// Get all fields of type select/multiselect/group/dyninput/flex with the checkbox Suggest Wizard active
-		// Process the tca of all fields and inject the rendered tca
-		// into the globals
-		$types = ["dyninput", "flex", "category"];
-		
-		// Check for an ajax request like the suggest wizard and generate tca only for suggest compatible fields
-		if ($_SERVER['HTTP_X_REQUESTED_WITH'] && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) {
-			$types = array_merge($types, ["select","multiselect","group","page"]);
-		}
 
 		if(!ExtensionManagementUtility::isLoaded("dataviewer"))
 			return;
 
 		// We need to create a dirty try-catch here, since we have nothing better to check for existence of many different needs
-		try 
-		{
+		try {
 			// We need to fetch all fields of the types, we have here, so we can pre-load the tca into the GLOBALS here
-			$fields = $this->fieldRepository->findByTypes($types);
+			$fields = $this->fieldRepository->findAll(false);
 
-			// We quick load the fieldtype configuration for these types to
-			// restore the information in our loop later
-			foreach($types as $_type)
+			/* @var \MageDeveloper\Dataviewer\Domain\Model\Record $record */
+			$record = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Model\Record::class);
+
+			foreach($fields as $_field)
 			{
-				if(!isset($this->fieldConfig[$_type]))
+				if($_field instanceof Field)
 				{
-					$fieldtypeConfiguration = $this->fieldtypeSettingsService->getFieldtypeConfiguration($_type);
+					$fieldtypeConfiguration = $this->fieldtypeSettingsService->getFieldtypeConfiguration($_field->getType());
 
 					if($fieldtypeConfiguration)
 					{
+						/* @var \MageDeveloper\Dataviewer\Domain\Model\Field $_field */
+						$fieldId = $_field->getUid();
+						$type = $_field->getType();
 						$class = $fieldtypeConfiguration->getFieldClass();
-						$this->fieldConfig[$_type] = $class;
+
+						if($this->objectManager->isRegistered($class))
+						{
+							/* @var \MageDeveloper\Dataviewer\Form\Fieldtype\AbstractFieldtype $fieldtype */
+							$fieldtype = $this->objectManager->get($class);
+							$fieldtype->formDataProviders = [];
+							$fieldtype->setField($_field);
+							$fieldtype->setRecord($record);
+
+							// Removing type to prevent items generation
+							$_field->setType("");
+
+							$tca = $fieldtype->buildTca();
+							$actualFieldName = $tca["fieldName"];
+
+							$_field->setType($type);
+
+							// We only can store normal fields except the RTE field (that is named
+							// '<id>_rte') because since TYPO3 8+
+							// the RTE field is retrieved from the database when checkValue is called
+							if(is_numeric($actualFieldName)) {
+								$config = $tca["processedTca"]["columns"][$actualFieldName]["config"];
+
+								// Injecting the virtual tca into the globals for later usage
+								$GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"][$actualFieldName]["config"] = $config;
+							}
+
+						}
 					}
-				}
-			}
-			
-			/* @var \MageDeveloper\Dataviewer\Domain\Model\Record $record */
-			$record = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Model\Record::class);
-			/*if(GeneralUtility::_POST("databaseRowUid") && GeneralUtility::_POST("databaseRowUid") > 0)
-			{
-				$uid = (int)GeneralUtility::_POST("databaseRowUid");
-				$record = $this->recordRepository->findByUid($uid, false);
-			}*/
-			
-			foreach($fields as $_field)
-			{
-				/* @var \MageDeveloper\Dataviewer\Domain\Model\Field $_field */
-				$fieldId = $_field->getUid();
-				$type = $_field->getType();
-				$class = $this->fieldConfig[$type];
-
-				if($this->objectManager->isRegistered($class))
-				{
-					/* @var \MageDeveloper\Dataviewer\Form\Fieldtype\AbstractFieldtype $fieldtype */
-					$fieldtype = $this->objectManager->get($class);
-					$fieldtype->formDataProviders = [];
-					$fieldtype->setField($_field);
-					$fieldtype->setRecord($record);
-
-					// Removing type to prevent items generation
-					$_field->setType("");
-
-					$tca = $fieldtype->buildTca();
 					
-					$_field->setType($type);
-
-					$config = $tca["processedTca"]["columns"][$fieldId]["config"];
-					
-
-					// Injecting the virtual tca into the globals for later usage
-					$GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"][$fieldId]["config"] = $config;
 				}
 			}
 
-		} catch (\Exception $e)
-		{
+		} catch (\Exception $e)	{
 			return;
 		}
-
 	}
 
 }
