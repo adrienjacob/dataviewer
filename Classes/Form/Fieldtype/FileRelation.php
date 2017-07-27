@@ -38,13 +38,6 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectTreeItems::class;
 		$this->formDataProviders[] = \MageDeveloper\Dataviewer\Form\FormDataProvider\TcaInlineFile::class;
 
-		// Original
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInline::class;
-
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexFetch::class;
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexPrepare::class;
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexProcess::class;
-
 		parent::initializeFormDataProviders();
 	}
 
@@ -60,7 +53,7 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 		$value 						= $this->getValue(false, true);
 		$databaseRow 				= $this->getDatabaseRow();
 		$databaseRow[$fieldName] 	= $value;
-		
+
 		$tca = [
 			"command" => "edit",
 			"tableName" => $tableName,
@@ -127,7 +120,7 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 								"showRemovedLocalizationRecords" => FALSE,
 								"showSynchronizationLink" => FALSE,
 								"showAllLocalizationLink" => FALSE,
-								"fileUploadAllowed" => (bool)$this->getField()->getConfig("fileUploadAllowed"), 
+								"fileUploadAllowed" => (bool)$this->getField()->getConfig("fileUploadAllowed"),
 								"enabledControls" => [
 									"info" => true,
 									"new" => false,
@@ -139,26 +132,24 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 								],
 							],
 							"behaviour" => [
-								"localizationMode" => "none",
-								"localizeChildrenAtParentLocalization" => false,
+								"localizationMode" => "select",
+								"localizeChildrenAtParentLocalization" => TRUE,
 							],
 						],
 					],
 				],
 			],
 			"inlineStructure" => [],
-			"inlineFirstPid" => $this->getRecord()->getPid(),
+			"inlineFirstPid" => $this->getInlineFirstPid(),
 			"inlineResolveExistingChildren" => true,
 			"inlineCompileExistingChildren"=> true,
-			//"defaultLanguageRow" => $databaseRow,
-			"defaultLanguageRow" => null,
 		];
-		
+
 		$this->prepareTca($tca);
 		$this->tca = $tca;
 		return $this->tca;
 	}
-
+	
 	/**
 	 * Prepares the TCA Array with
 	 * the form data providers
@@ -177,15 +168,17 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 		if($minitems = $this->getField()->getConfig("minitems"))
 			$tca["processedTca"]["columns"][$fieldName]["config"]["minitems"] = $minitems;
 
-		//show_thumbs
-		$tca["processedTca"]["columns"][$fieldName]["config"]["show_thumbs"] = (int)$this->getField()->getConfig("show_thumbs");
-
 		//size
 		if($size = $this->getField()->getConfig("size"))
 			$tca["processedTca"]["columns"][$fieldName]["config"]["size"] = $size;
 
+		//show_thumbs
+		if($showThumbs = $this->getField()->getConfig("show_thumbs"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["show_thumbs"] = $showThumbs;
+
 		//multiple
-		$tca["processedTca"]["columns"][$fieldName]["config"]["multiple"] = (int)$this->getField()->getConfig("multiple");
+		if($multiple = $this->getField()->getConfig("multiple"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["multiple"] = (int)$multiple;
 
 		//selectedListStyle
 		if($selectedListStyle = $this->getField()->getConfig("selectedListStyle"))
@@ -204,7 +197,8 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 			$tca["processedTca"]["columns"][$fieldName]["config"]["max_size"] = $max_size;
 
 		//hideMoveIcons
-		$tca["processedTca"]["columns"][$fieldName]["config"]["hideMoveIcons"] = (int)$this->getField()->getConfig("hideMoveIcons");
+		if($hideMoveIcons = $this->getField()->getConfig("hideMoveIcons"))
+			$tca["processedTca"]["columns"][$fieldName]["config"]["hideMoveIcons"] = (int)$hideMoveIcons;
 
 		//disable_controls
 		if($disable_controls = $this->getField()->getConfig("disable_controls"))
@@ -212,6 +206,5 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 
 		parent::prepareTca($tca);
 	}
-
 
 }
