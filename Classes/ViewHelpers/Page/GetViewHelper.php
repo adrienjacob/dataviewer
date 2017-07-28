@@ -1,6 +1,8 @@
 <?php
 namespace MageDeveloper\Dataviewer\ViewHelpers\Page;
 
+use TYPO3\CMS\Backend\Utility\BackendUtility;
+
 /**
  * MageDeveloper Dataviewer Extension
  * -----------------------------------
@@ -21,21 +23,7 @@ class GetViewHelper extends \MageDeveloper\Dataviewer\ViewHelpers\AbstractViewHe
 	 */
 	public function render($id)
 	{
-		$content = "";
-		$res = $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
-			"*",
-			"pages",
-			"uid = {$id}",
-			"uid ASC"
-		);
-		
-		$row = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($res);
-		$GLOBALS["TYPO3_DB"]->sql_free_result($res);
-	
-		if(!is_array($row))	
-			$row = [];
-			
-		return $row;	
+		return BackendUtility::getRecord("pages", $id);
 	}
 
 }
