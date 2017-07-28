@@ -14,39 +14,8 @@ use MageDeveloper\Dataviewer\Domain\Model\RecordValue;
  * @copyright   Magento Developers / magedeveloper.de <kontakt@magedeveloper.de>
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class Datatype extends AbstractFieldtype implements FieldtypeInterface
+class Datatype extends Inline
 {
-	/**
-	 * Initializes all form data providers to
-	 * $this->formDataProviders
-	 *
-	 * Will be executed in order of the added providers!
-	 *
-	 * @return void
-	 */
-	public function initializeFormDataProviders()
-	{
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRowInitializeNew::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInlineIsOnSymmetricSide::class;
-
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\InlineOverrideChildTca::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectTreeItems::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInlineExpandCollapseState::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInlineConfiguration::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaRecordTitle::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectTreeItems::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInline::class;
-
-
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexFetch::class;
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexPrepare::class;
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexProcess::class;
-
-		//$this->formDataProviders[] = \MageDeveloper\Dataviewer\Form\FormDataGroup\InlineParentRecord::class;
-
-		parent::initializeFormDataProviders();
-	}
-
 	/**
 	 * Gets built tca array
 	 *
@@ -93,7 +62,7 @@ class Datatype extends AbstractFieldtype implements FieldtypeInterface
 				],
 			],
 			"inlineStructure" => [],
-			"inlineFirstPid" => ($this->getField()->getConfig("pid_config") > 0)?(int)$this->getField()->getConfig("pid_config"):$this->getRecord()->getPid(),
+			"inlineFirstPid" => $this->getInlineFirstPid(),
 			"inlineResolveExistingChildren" => true,
 			"inlineCompileExistingChildren"=> true,
 		];
@@ -102,31 +71,5 @@ class Datatype extends AbstractFieldtype implements FieldtypeInterface
 		$this->tca = $tca;
 		return $this->tca;
 	}
-
-	/**
-	 * Prepares the TCA Array with
-	 * the form data providers
-	 *
-	 * @param array $tca
-	 */
-	public function prepareTca(array &$tca)
-	{
-		$fieldName = $tca["fieldName"];
-
-		//maxitems
-		if($maxitems = $this->getField()->getConfig("maxitems"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["maxitems"] = $maxitems;
-
-		//minitems
-		if($minitems = $this->getField()->getConfig("minitems"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["minitems"] = $minitems;
-
-		//size
-		if($size = $this->getField()->getConfig("size"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["size"] = $size;
-
-		parent::prepareTca($tca);
-	}
-
 
 }

@@ -14,7 +14,7 @@ use MageDeveloper\Dataviewer\Domain\Model\RecordValue;
  * @copyright   Magento Developers / magedeveloper.de <kontakt@magedeveloper.de>
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class FileRelation extends AbstractFieldtype implements FieldtypeInterface
+class FileRelation extends Inline
 {
 	/**
 	 * Initializes all form data providers to
@@ -26,23 +26,8 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 	 */
 	public function initializeFormDataProviders()
 	{
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\DatabaseRowInitializeNew::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInlineIsOnSymmetricSide::class;
-
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\InlineOverrideChildTca::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectTreeItems::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInlineExpandCollapseState::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInlineConfiguration::class;
-		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaRecordTitle::class;
 		$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectTreeItems::class;
 		$this->formDataProviders[] = \MageDeveloper\Dataviewer\Form\FormDataProvider\TcaInlineFile::class;
-
-		// Original
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaInline::class;
-
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexFetch::class;
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexPrepare::class;
-		//$this->formDataProviders[] = \TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexProcess::class;
 
 		parent::initializeFormDataProviders();
 	}
@@ -132,7 +117,7 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 				],
 			],
 			"inlineStructure" => [],
-			"inlineFirstPid" => $this->getRecord()->getPid(),
+			"inlineFirstPid" => $this->getInlineFirstPid(),
 			"inlineResolveExistingChildren" => true,
 			"inlineCompileExistingChildren"=> true,
 		];
@@ -142,60 +127,5 @@ class FileRelation extends AbstractFieldtype implements FieldtypeInterface
 		$this->tca = $tca;
 		return $this->tca;
 	}
-
-	/**
-	 * Prepares the TCA Array with
-	 * the form data providers
-	 *
-	 * @param array $tca
-	 */
-	public function prepareTca(array &$tca)
-	{
-		$fieldName = $tca["fieldName"];
-
-		//maxitems
-		if($maxitems = $this->getField()->getConfig("maxitems"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["maxitems"] = $maxitems;
-
-		//minitems
-		if($minitems = $this->getField()->getConfig("minitems"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["minitems"] = $minitems;
-
-		//show_thumbs
-		$tca["processedTca"]["columns"][$fieldName]["config"]["show_thumbs"] = (int)$this->getField()->getConfig("show_thumbs");
-
-		//size
-		if($size = $this->getField()->getConfig("size"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["size"] = $size;
-
-		//multiple
-		$tca["processedTca"]["columns"][$fieldName]["config"]["multiple"] = (int)$this->getField()->getConfig("multiple");
-
-		//selectedListStyle
-		if($selectedListStyle = $this->getField()->getConfig("selectedListStyle"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["selectedListStyle"] = $selectedListStyle;
-
-		//allowed
-		if($allowed = $this->getField()->getConfig("allowed"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["allowed"] = $allowed;
-
-		//disallowed
-		if($disallowed = $this->getField()->getConfig("disallowed"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["disallowed"] = $disallowed;
-
-		//max_size
-		if($max_size = $this->getField()->getConfig("max_size"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["max_size"] = $max_size;
-
-		//hideMoveIcons
-		$tca["processedTca"]["columns"][$fieldName]["config"]["hideMoveIcons"] = (int)$this->getField()->getConfig("hideMoveIcons");
-
-		//disable_controls
-		if($disable_controls = $this->getField()->getConfig("disable_controls"))
-			$tca["processedTca"]["columns"][$fieldName]["config"]["disable_controls"] = $disable_controls;
-
-		parent::prepareTca($tca);
-	}
-
 
 }
