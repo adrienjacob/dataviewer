@@ -13,6 +13,9 @@ Changelog
 **1.7.7**
 
 - [BUGFIX] Tab corrections for inline elements
+- [BUGFIX] Missing Storage Page Message
+- [BUGFIX] Now showing records on Pid 0
+- [BUGFIX] Corrected Pid of new file relations when creating a new record
 
 **1.7.6**
 
