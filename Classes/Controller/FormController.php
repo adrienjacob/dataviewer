@@ -92,12 +92,16 @@ class FormController extends AbstractController
 	/**
 	 * Gets a new record instance
 	 * 
+	 * @throws \MageDeveloper\Dataviewer\Exception\NoDatatypeException
 	 * @return \MageDeveloper\Dataviewer\Domain\Model\Record
 	 */
 	protected function _getNewRecord()
 	{
 		$datatype = $this->_getSelectedDatatype();
-		
+
+		if(!$datatype instanceof \MageDeveloper\Dataviewer\Domain\Model\Datatype)
+			throw new \MageDeveloper\Dataviewer\Exception\NoDatatypeException("No datatype selected");
+
 		/* @var Record $record */
 		$record = $this->objectManager->get(Record::class);
 		$record->setDatatype($datatype);
@@ -149,7 +153,7 @@ class FormController extends AbstractController
 		$GLOBALS['LANG']->csConvObj = $this->objectManager->get(CharsetConverter::class);
 		if(!$GLOBALS["BE_USER"])
 		{
-			/** @var $backendUser \TYPO3\CMS\Core\Authentication\BackendUserAuthentication */
+			/* @var $backendUser \TYPO3\CMS\Core\Authentication\BackendUserAuthentication */
 			$backendUser = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication::class);
 			$GLOBALS['BE_USER'] = $backendUser;
 			$backendUser->start();

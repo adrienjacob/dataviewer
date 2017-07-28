@@ -528,7 +528,7 @@ class RecordController extends AbstractController
 				]
 			);
 
-			$view->assign("records", $records);
+			$view->assign($this->listSettingsService->getRecordsVarName(), $records);
 			$view->assign("ajax", 1);
 			$view->assign("parameters", $parameters);
 
@@ -631,7 +631,7 @@ class RecordController extends AbstractController
 
 			if(is_null($perPage)) $perPage = $this->listSettingsService->getPerPage();
 
-			if(!$this->sessionServiceContainer->getSortSessionService()->hasOrderings() || !$this->_hasTargetSortPlugin())
+			if(!$this->sessionServiceContainer->getSortSessionService()->hasOrderings() || !$this->_hasTargetPlugin("dataviewer_sort"))
 			{
 				// We initally set orderings from our plugin settings and will use
 				// information from the sort plugin later, once it was used
@@ -684,6 +684,14 @@ class RecordController extends AbstractController
 
 		// Pager
 		$perPage		= $this->sessionServiceContainer->getPagerSessionService()->getPerPage();
+
+		// Session has no pager settings, so we take the default setting from the plugin settings
+		if(!$perPage)
+		{
+			$perPage	= $this->listSettingsService->getPerPage();
+			$this->sessionServiceContainer->getSortSessionService()->setPerPage($perPage);
+		}
+		
 		$selectedPage	= $this->sessionServiceContainer->getPagerSessionService()->getSelectedPage();
 		if(is_null($selectedPage) || !$selectedPage) $selectedPage = 1;
 
@@ -695,7 +703,7 @@ class RecordController extends AbstractController
 		if($perPage && $selectedPage > 0)
 			$limit = "$page,{$perPage}";
 
-		if(!$this->_hasTargetSortPlugin() || !$this->sessionServiceContainer->getSortSessionService()->hasOrderings())
+		if(!$this->_hasTargetPlugin("dataviewer_sort") || !$this->sessionServiceContainer->getSortSessionService()->hasOrderings())
 		{
 			// If this plugin has no sorting plugin that is targeting to this plugin,
 			// we can set the default sorting settings to the plugin settings
@@ -970,9 +978,10 @@ class RecordController extends AbstractController
 	 * Checks if there is a sort plugin, that is
 	 * targeting to this element and is active
 	 *
+	 * @param string $listType
 	 * @return bool
 	 */
-	protected function _hasTargetSortPlugin()
+	protected function _hasTargetPlugin($listType)
 	{
 		if($this->listSettingsService->isForcedSorting())
 			return false;
@@ -983,15 +992,16 @@ class RecordController extends AbstractController
 		{
 			return false;
 		}
-
+		
 		$res = $GLOBALS["TYPO3_DB"]->exec_SELECTgetRows(
 			"uid",				// SELECT
 			"tt_content",		// FROM
-			"list_type = 'dataviewer_sort' AND hidden = 0 AND deleted = 0 AND pi_flexform RLIKE '<field index=\"settings.target_plugin\">.*<value index=\"vDEF\">{$uid}</value>.*</field>'"	// WHERE
+			"list_type = '{$listType}' AND hidden = 0 AND deleted = 0 AND pi_flexform RLIKE '<field index=\"settings.target_plugin\">.*<value index=\"vDEF\">{$uid}</value>.*</field>'"	// WHERE
 		);
 
 		return (count($res)>0);
 	}
+
 
 	/**
 	 * initializeView
