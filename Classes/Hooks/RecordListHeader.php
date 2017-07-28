@@ -139,27 +139,31 @@ class RecordListHeader implements RecordListHookInterface
 			"crdate" 	=> "crdate",
 		];
 
-		$pid = $parentObject->pageRow["uid"];
+		$pid = (int)$parentObject->pageRow["uid"];
 		
-		// We get all datatypes from records on this page and
-		// use their fields to fill the sort by options
-		$datatypes = $this->datatypeRepository->findAllOfRecordsOnPid([$pid]);
-		
-		foreach($datatypes as $_datatype)
-		{
-			/* @var \MageDeveloper\Dataviewer\Domain\Model\Datatype $_datatype */
-			$fields = $_datatype->getFields();
+		if($pid>0){
 
-			// Adding the fields to the sortBy Options
-			if(count($fields))
+			// We get all datatypes from records on this page and
+			// use their fields to fill the sort by options
+			$datatypes = $this->datatypeRepository->findAllOfRecordsOnPid([$pid]);
+
+			foreach($datatypes as $_datatype)
 			{
-				foreach($fields as $_field)
+				/* @var \MageDeveloper\Dataviewer\Domain\Model\Datatype $_datatype */
+				$fields = $_datatype->getFields();
+
+				// Adding the fields to the sortBy Options
+				if(count($fields))
 				{
-					$label = "[{$_field->getPid()}] " . strtoupper($_field->getType()) . ": " . $_field->getFrontendLabel();
-					$sortByOptions[$_field->getUid()] = $label;
+					foreach($fields as $_field)
+					{
+						$label = "[{$_field->getPid()}] " . strtoupper($_field->getType()) . ": " . $_field->getFrontendLabel();
+						$sortByOptions[$_field->getUid()] = $label;
+					}
 				}
 			}
 		}
+		
 		
 		$sortBy 	= $this->backendSessionService->getSortBy();
 		$sortOrder 	= $this->backendSessionService->getSortOrder();
