@@ -60,6 +60,17 @@ class IconUtility
 		$icons["{$prefix}recordvalue"] 		= "EXT:dataviewer/Resources/Public/Icons/Domain/Model/RecordValue.gif";
 		$icons["{$prefix}variable"] 		= "EXT:dataviewer/Resources/Public/Icons/Domain/Model/Variable.gif";
 
+		// Plugin Icons
+		$icons["dataviewer-icon-logo"] 				= "EXT:dataviewer/Resources/Public/Images/logo_dataviewer.png";
+		$icons["dataviewer-icon-dataviewer_record"] = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_record.gif";
+		$icons["dataviewer-icon-dataviewer_search"] = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_search.gif";
+		$icons["dataviewer-icon-dataviewer_letter"] = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_letter.gif";
+		$icons["dataviewer-icon-dataviewer_sort"]   = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_sort.gif";
+		$icons["dataviewer-icon-dataviewer_filter"] = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_filter.gif";
+		$icons["dataviewer-icon-dataviewer_select"] = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_select.gif";
+		$icons["dataviewer-icon-dataviewer_form"]   = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_form.gif";
+		$icons["dataviewer-icon-dataviewer_pager"]  = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_pager.gif";
+
 		return $icons;
 	}
 
