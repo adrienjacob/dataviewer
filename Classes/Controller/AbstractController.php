@@ -247,7 +247,7 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
                                 $value = \MageDeveloper\Dataviewer\Utility\GetPostUtility::secureVariableGet($value);
                             }
 
-							$variables[$name] = $value;
+							$variables[$name] = $variable->castType($value);
 						}
 						break;
 					case Variable::VARIABLE_TYPE_POST:
@@ -266,8 +266,8 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
                             {
                                 $value = \MageDeveloper\Dataviewer\Utility\GetPostUtility::secureVariablePost($value);
                             }
-                            
-							$variables[$name] = $value;
+
+							$variables[$name] = $variable->castType($value);
 						}
 						break;
 					case Variable::VARIABLE_TYPE_RECORD:
