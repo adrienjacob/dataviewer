@@ -6,6 +6,7 @@ use MageDeveloper\Dataviewer\Domain\Model\Datatype;
 use MageDeveloper\Dataviewer\Domain\Model\RecordValue;
 use MageDeveloper\Dataviewer\Domain\Model\Field;
 use MageDeveloper\Dataviewer\Utility\ArrayUtility;
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -18,7 +19,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @copyright   Magento Developers / magedeveloper.de <kontakt@magedeveloper.de>
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class RecordFactory
+class RecordFactory implements SingletonInterface
 {
 	/**
 	 * Object Manager

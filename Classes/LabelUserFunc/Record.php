@@ -1,7 +1,7 @@
 <?php
 namespace MageDeveloper\Dataviewer\LabelUserFunc;
 
-use \MageDeveloper\Dataviewer\Utility\LocalizationUtility as Locale;
+use MageDeveloper\Dataviewer\Utility\LocalizationUtility as Locale;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -58,6 +58,9 @@ class Record
 	 */
 	public function displayLabel(&$pObj)
 	{
+		if(TYPO3_MODE != "BE")
+			return;
+			
 		if (isset($pObj["row"]))
 		{
 			$row = $pObj["row"];
