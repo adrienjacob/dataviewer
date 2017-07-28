@@ -100,7 +100,7 @@ abstract class AbstractSettingsService implements \TYPO3\CMS\Core\SingletonInter
 	 */
 	public function getFullConfiguration($extensionName = null, $pluginName = null)
 	{
-		if ($this->configuration === NULL)
+		if ($this->configuration === NULL || empty($this->configuration))
 		{
 			$this->configuration = $this->configurationManager->getConfiguration(
 				\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FULL_TYPOSCRIPT,
