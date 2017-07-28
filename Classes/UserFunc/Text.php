@@ -137,8 +137,22 @@ class Text
 		$pids = [];
 		foreach($pages as $_page)
 		{
-			preg_match('/(?<table>.*)_(?<uid>[0-9]{0,11})|.*/', $_page, $match);
-			$pids[] = $match["uid"];
+			if(is_array($_page))
+			{
+				$pids[] = $_page["uid"];
+			}
+			else
+			{
+				preg_match('/(?<table>.*)_(?<uid>[0-9]{0,11})|.*/', $_page, $match);
+
+				if(is_array($match))
+				{
+					if(isset($match["uid"]))
+						$pids[] = $match["uid"];
+					else
+						$pids[] = $match[0];
+				}
+			}
 		}
 
 		// Adding the pid of the current content element for possible inline variables
