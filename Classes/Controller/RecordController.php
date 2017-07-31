@@ -661,16 +661,19 @@ class RecordController extends AbstractController
 	{
 		// Limit
 		$limit			= $this->listSettingsService->getLimitation();
-
+		
 		// Pager
 		$perPage		= $this->sessionServiceContainer->getPagerSessionService()->getPerPage();
-
+		
 		// Session has no pager settings, so we take the default setting from the plugin settings
 		if(!$perPage)
 		{
 			$perPage	= $this->listSettingsService->getPerPage();
 			$this->sessionServiceContainer->getSortSessionService()->setPerPage($perPage);
 		}
+		
+		if($limit > 0)
+			$perPage = $limit;
 		
 		$selectedPage	= $this->sessionServiceContainer->getPagerSessionService()->getSelectedPage();
 		if(is_null($selectedPage) || !$selectedPage) $selectedPage = 1;
