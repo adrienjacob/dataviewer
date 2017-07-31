@@ -492,6 +492,9 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 */
 	protected function initializeView(ViewInterface $view)
 	{
+		// Inject current settings to the settings service
+		$this->pluginSettingsService->setSettings($this->settings);
+	
 		// Individual session key
 		$uid = $this->_getContentUid();
 		$this->sessionServiceContainer->setTargetUid($uid);
@@ -541,9 +544,6 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 		$variables = $this->prepareVariables($ids);
 		$this->view->assignMultiple($variables);
 		
-		// Inject current settings to the settings service
-		$this->pluginSettingsService->setSettings($this->settings);
-
 		// Add the baseURL to the view
 		$this->view->assign("baseUrl", $GLOBALS["TSFE"]->baseURL);
 
