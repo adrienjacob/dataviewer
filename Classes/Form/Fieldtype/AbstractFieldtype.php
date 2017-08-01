@@ -629,6 +629,26 @@ abstract class AbstractFieldtype
 	}
 
 	/**
+	 * Gets the inline first pid setting
+	 * for determe the pid of which the
+	 * records shall be stored
+	 *
+	 * @return int
+	 */
+	protected function getInlineFirstPid()
+	{
+		if($this->getField()->getConfig("pid_config") > 0)
+			return (int)$this->getField()->getConfig("pid_config");
+
+		if($this->getRecord()->getPid() > 0)
+			return $this->getRecord()->getPid();
+
+		$edit = GeneralUtility::_GET("edit");
+		if(isset($edit["tx_dataviewer_domain_model_record"]))
+			return (int)key($edit["tx_dataviewer_domain_model_record"]);
+	}
+
+	/**
 	 * Renders a field
 	 *
 	 * @return array
