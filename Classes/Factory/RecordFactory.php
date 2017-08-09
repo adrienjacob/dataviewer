@@ -6,8 +6,10 @@ use MageDeveloper\Dataviewer\Domain\Model\Datatype;
 use MageDeveloper\Dataviewer\Domain\Model\RecordValue;
 use MageDeveloper\Dataviewer\Domain\Model\Field;
 use MageDeveloper\Dataviewer\Utility\ArrayUtility;
+use TYPO3\CMS\Core\Resource\DuplicationBehavior;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\File\BasicFileUtility;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -35,6 +37,14 @@ class RecordFactory implements SingletonInterface
 	 * @inject
 	 */
 	protected $persistenceManager;
+
+	/**
+	 * Signal/Slot Dispatcher
+	 *
+	 * @var \TYPO3\CMS\Extbase\SignalSlot\Dispatcher
+	 * @inject
+	 */
+	protected $signalSlotDispatcher;
 
 	/**
 	 * Datatype Repository
@@ -116,15 +126,22 @@ class RecordFactory implements SingletonInterface
 		else
 		{
 			// Fallback for pid of the datatype pid
-			$fieldArray["pid"] = $datatype->getPid();
+			$record->setPid($datatype->getPid());
 		}
 		
+		$this->recordDataHandler->setDontProcessTransformations(true);
+
+		/////////////////////////////////////////////////
+		// Signal-Slot 'createPreProcess'              //
+		/////////////////////////////////////////////////
+		$this->signalSlotDispatcher->dispatch(__CLASS__,"createPreProcess",[&$fieldArray, &$this]);
+
 		// Traverse the data into the relevant fieldId=>value information
 		if ($traverse)
 			$traversedFieldArray = $this->traverseFieldArray($fieldArray, $datatype);
 		else
 			$traversedFieldArray = $fieldArray;
-			
+
 		// Check for validation errors
 		$this->validationErrors = $this->recordDataHandler->validateFieldArray($traversedFieldArray, $datatype);
 
@@ -134,6 +151,11 @@ class RecordFactory implements SingletonInterface
 
 		if(empty($this->validationErrors) || $forceCreation)
 			$result = $this->recordDataHandler->processRecord($traversedFieldArray, $record);
+
+		/////////////////////////////////////////////////
+		// Signal-Slot 'createPostProcess'             //
+		/////////////////////////////////////////////////
+		$this->signalSlotDispatcher->dispatch(__CLASS__,"createPostProcess",[&$record, &$fieldArray, &$this]);
 		
 		return $record;
 	}
@@ -157,6 +179,11 @@ class RecordFactory implements SingletonInterface
 			);
 		}
 
+		/////////////////////////////////////////////////
+		// Signal-Slot 'updatePreProcess'              //
+		/////////////////////////////////////////////////
+		$this->signalSlotDispatcher->dispatch(__CLASS__,"updatePreProcess",[&$updateFieldArray, &$this]);
+
 		// Traverse the data into the relevant fieldId=>value information
 		if ($traverse)
 			$traversedFieldArray = $this->traverseFieldArray($updateFieldArray, $record->getDatatype());
@@ -173,7 +200,7 @@ class RecordFactory implements SingletonInterface
 		}
 
 		$fieldArray = array_replace($originalRecordFieldArray, $traversedFieldArray);
-		
+
 		// Check for validation errors
 		$this->validationErrors = $this->recordDataHandler->validateFieldArray($fieldArray, $record->getDatatype());
 
@@ -183,7 +210,49 @@ class RecordFactory implements SingletonInterface
 
 		$result = $this->recordDataHandler->processRecord($fieldArray, $record);
 
+		/////////////////////////////////////////////////
+		// Signal-Slot 'updatePostProcess'             //
+		/////////////////////////////////////////////////
+		$this->signalSlotDispatcher->dispatch(__CLASS__,"updatePostProcess",[&$record, &$fieldArray, &$this]);
+
 		return $record;
+	}
+
+	/**
+	 * Regenerates dynamic values from an existing record
+	 * 
+	 * @param \MageDeveloper\Dataviewer\Domain\Model\Record $record
+	 * @return bool
+	 */
+	public function regenerateDynamicValues(Record $record)
+	{
+		if($record->getUid() > 0)
+		{
+			$recordValues = $record->getRecordValues();
+
+			if(count($recordValues) > 0) {
+				$originalRecordFieldArray = [];
+
+				foreach($recordValues as $_recordValue) {
+
+					/* @var RecordValue $_recordValue */
+					$originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
+				}
+
+				try {
+					$result = $this->recordDataHandler->processRecord($originalRecordFieldArray, $record);
+					$this->recordRepository->update($record);
+					$this->persistenceManager->persistAll();
+				} catch (\Exception $e)	{ 
+					return false;
+				}
+				
+				return true;
+			}
+
+		}
+		
+		return false;
 	}
 
 	/**
@@ -205,6 +274,7 @@ class RecordFactory implements SingletonInterface
 		$resourceFactory = $this->objectManager->get(\TYPO3\CMS\Core\Resource\ResourceFactory::class);
 		$defaultStorage = $resourceFactory->getDefaultStorage();
 		$dataHandler = $this->objectManager->get(\TYPO3\CMS\Core\DataHandling\DataHandler::class);
+		$dataHandler->fileFunc = GeneralUtility::makeInstance(BasicFileUtility::class);
 		/* @var \TYPO3\CMS\Core\Resource\Folder $targetFolder */
 		$targetFolder = $defaultStorage->getFolder($uploadFolder);
 		$newFileName = $fileInfo["name"];
@@ -228,6 +298,16 @@ class RecordFactory implements SingletonInterface
 			"tx_dataviewer_domain_model_record" => $newId,
 		];
 
+		$allowed = $field->getConfig("allowed");
+		$disallowed = $field->getConfig("disallowed");
+
+		$dataHandler->fileFunc->f_ext['webspace']['allow'] = $allowed;
+		$dataHandler->fileFunc->f_ext['webspace']['deny'] = $disallowed;
+
+		$dataHandler->fileFunc->f_ext['ftpspace']['allow'] = $allowed;
+		$dataHandler->fileFunc->f_ext['ftpspace']['deny'] = $disallowed;
+		
+		$dataHandler->bypassFileHandling = true;
 		$dataHandler->start($data, []);
 		$dataHandler->admin = true;
 		$dataHandler->userid = 0;
