@@ -134,12 +134,6 @@ class Date extends AbstractFieldvalue implements FieldvalueInterface
      */
     public function getValueArray()
     {
-        $dateTime = $this->getFrontendValue();
-        if($dateTime instanceof \DateTime)
-        {
-            return [$dateTime->format( $this->getFormat() )];
-        }
-
         return [$this->getValue()];
     }
 }

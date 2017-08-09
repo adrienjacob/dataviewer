@@ -53,9 +53,11 @@ class Fluid extends AbstractFieldvalue implements FieldvalueInterface
 				$standaloneView->assignMultiple($variables);
 			}
 
+			$record = $this->getRecord();
 			$recordVariableName = $this->pluginSettingsService->getRecordVarName();
-			$standaloneView->assign($recordVariableName, $this->getRecord());
+			$standaloneView->assign($recordVariableName, $record);
 		}
+		
 
 		return $standaloneView;
 	}
@@ -69,10 +71,13 @@ class Fluid extends AbstractFieldvalue implements FieldvalueInterface
 	{
 		$html = "";
 		$items = $this->getFieldtype()->getFieldItems();
+		
 		foreach($items as $_fielditem)
 		{
 			$fluidSource = reset($_fielditem);
-			$rendered = $this->_getView()->renderSource($fluidSource);
+			$view = $this->_getView();
+			$view->setTemplateSource($fluidSource);
+			$rendered = $view->render();
 			$html .= $rendered;
 		}
 

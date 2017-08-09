@@ -179,8 +179,7 @@ class Select extends AbstractFieldvalue implements FieldvalueInterface
 	public function getValueArray()
 	{
 		$value = $this->getValue();
-		$valueArr = GeneralUtility::trimExplode(",", $value, true);
-
+		
 		if($this->getField()->getConfig("foreign"))
 		{
 			$foreignTable = $this->getField()->getConfig("foreign_table");
@@ -195,11 +194,11 @@ class Select extends AbstractFieldvalue implements FieldvalueInterface
 					$searchFieldsArr = GeneralUtility::trimExplode(",", $searchFields, true);
 					$searchData = array_intersect_key($record, array_flip($searchFieldsArr));
 					$firstSearchData = reset($searchData);
-					$valueArr[] = $firstSearchData;
+					return [$value.":".$firstSearchData];
 				}
 			}
 		}
 
-		return $valueArr;
+		return $value;
 	}
 }
