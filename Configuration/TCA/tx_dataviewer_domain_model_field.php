@@ -38,15 +38,15 @@ return [
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
                     logo, type, field_conf,
                 --div--;LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:frontend_settings,
-                  	frontend_label, variable_name, id, templatefile,
+                  	--palette--;;label, templatefile,
                 --div--;LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:backend_settings,
-                  	is_record_title, show_title, description, column_width, css_class,
+                  --palette--;;titles, --palette--;;backend_style, description,
                 --div--;LLL:EXT:dataviewer/Resources/Private/Language/locallang_db.xlf:tx_dataviewer_domain_model_field.field_values,
                   	field_values, unit,
                 --div--;LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.validation,
                 	validation,
                 --div--;LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.display_cond,
-                	 request_update, field_ids, display_cond,
+                	 request_update, --palette--;;displaycond,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:language,
                     --palette--;;language,
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
@@ -56,7 +56,11 @@ return [
 	],
 	'palettes' => [
 		'timeRestriction' => ['showitem' => 'starttime, endtime'],
+		'label' => ['showitem' => 'frontend_label, variable_name, --linebreak--, id'],
 		'language' => ['showitem' => 'sys_language_uid, l10n_parent'],
+		'backend_style' => ['showitem' => 'column_width, css_class'],
+		'titles' => ['showitem' => 'is_record_title, show_title'],
+		'displaycond' => ['showitem' => 'field_ids,--linebreak--,display_cond'],
 	],
 	'columns' => [
 		'sys_language_uid' => [
@@ -99,6 +103,24 @@ return [
 				'size' => 30,
 				'max' => 30
 			]
+		],
+		'crdate' => [
+			'exclude' => 1,
+			'label' => '',
+			'config' => [
+				'type' => 'input',
+				'size' => 30,
+				'eval' => 'int'
+			],
+		],
+		'tstamp' => [
+			'exclude' => 1,
+			'label' => '',
+			'config' => [
+				'type' => 'input',
+				'size' => 30,
+				'eval' => 'int'
+			],
 		],
 		'hidden' => [
 			'exclude' => 1,
@@ -239,7 +261,7 @@ return [
 			'config' => [
 				'type' => 'input',
 				'size' => 30,
-				'eval' => 'trim,lower,alpha'
+				'eval' => 'trim,lower,alpha',
 			],
 		],
 		'is_active' => [

@@ -64,14 +64,7 @@ class Datatype extends AbstractModel
 	 * @var boolean
 	 */
 	protected $hideAdd = false;
-
-	/**
-	 * Datatype is hidden
-	 *
-	 * @var boolean
-	 */
-	protected $hidden = FALSE;
-
+	
 	/**
 	 * Datatype - Field Relations
 	 * 
@@ -281,38 +274,6 @@ class Datatype extends AbstractModel
 	public function setHideAdd($hideAdd = true)
 	{
 		$this->hideAdd = $hideAdd;
-	}
-	
-	
-
-	/**
-	 * Checks if the fieldvalue is hidden
-	 *
-	 * @return bool
-	 */
-	public function isHidden()
-	{
-		return $this->hidden;
-	}
-
-	/**
-	 * Sets the hidden status
-	 *
-	 * @param bool $hidden
-	 */
-	public function setHidden($hidden)
-	{
-		$this->hidden = $hidden;
-	}
-
-	/**
-	 * Gets the hidden status
-	 *
-	 * @return bool
-	 */
-	public function getHidden()
-	{
-		return $this->hidden;
 	}
 	
 	/**
