@@ -16,6 +16,11 @@ Changelog
 - [BUGFIX] Missing Storage Page Message
 - [BUGFIX] Now showing records on Pid 0
 - [BUGFIX] Corrected Pid of new file relations when creating a new record
+- [TASK] RecoryFactory::update now can update only single items
+- [BUGFIX] Corrected default 'disallowed' on file fields
+- [BUGFIX] Multiselect has now 'size' configuration
+- [TASK] Added useful information to the TypoScript/UserFunc
+- [TASK] Signal/Slot in RecordFactory when Creating or Updating Records
 
 **1.7.6**
 
