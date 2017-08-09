@@ -105,6 +105,15 @@ return [
 				'eval' => 'datetime',
 			],
 		],
+		'crdate' => [
+			'exclude' => 1,
+			'label' => '',
+			'config' => [
+				'type' => 'input',
+				'size' => 30,
+				'eval' => 'int'
+			],
+		],
 		'starttime' => [
 			'exclude' => 1,
 			'l10n_mode' => 'mergeIfNotBlank',

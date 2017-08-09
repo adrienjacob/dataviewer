@@ -97,6 +97,15 @@ return [
 				'type' => 'check',
 			],
 		],
+		'crdate' => [
+			'exclude' => 1,
+			'label' => '',
+			'config' => [
+				'type' => 'input',
+				'size' => 30,
+				'eval' => 'int'
+			],
+		],
 		'tstamp' => [
 			'exclude' => 1,
 			'label' => '',
