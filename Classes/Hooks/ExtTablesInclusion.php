@@ -2,11 +2,10 @@
 namespace MageDeveloper\Dataviewer\Hooks;
 
 use MageDeveloper\Dataviewer\Domain\Model\Field;
-use MageDeveloper\Dataviewer\Utility\LocalizationUtility;
-use TYPO3\CMS\Core\Database\DatabaseConnection;
-use TYPO3\CMS\Core\Package\PackageManager;
+use MageDeveloper\Dataviewer\Domain\Repository\FieldRepository;
+use MageDeveloper\Dataviewer\Factory\TcaFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
  * This class generates the whole tca information for all fields and adds the
@@ -48,28 +47,13 @@ class ExtTablesInclusion implements \TYPO3\CMS\Core\Database\TableConfigurationP
 	protected $fieldRepository;
 
 	/**
-	 * Field Repository
-	 *
-	 * @var \MageDeveloper\Dataviewer\Domain\Repository\RecordRepository
+	 * Tca Factory
+	 * 
+	 * @var TcaFactory
 	 * @inject
 	 */
-	protected $recordRepository;
-
-	/**
-	 * Fieldtype Settings Service
-	 *
-	 * @var \MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService
-	 * @inject
-	 */
-	protected $fieldtypeSettingsService;
-
-	/**
-	 * Field Configuration
-	 *
-	 * @var array
-	 */
-	protected $fieldConfig = [];
-
+	protected $tcaFactory;
+	
 	/**
 	 * Constructor
 	 *
@@ -77,10 +61,9 @@ class ExtTablesInclusion implements \TYPO3\CMS\Core\Database\TableConfigurationP
 	 */
 	public function __construct()
 	{
-		$this->objectManager    = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
-		$this->fieldRepository	= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\FieldRepository::class);
-		$this->recordRepository = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordRepository::class);
-		$this->fieldtypeSettingsService = $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService::class);
+		$this->objectManager    = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(ObjectManager::class);
+		$this->fieldRepository	= $this->objectManager->get(FieldRepository::class);
+		$this->tcaFactory 		= $this->objectManager->get(TcaFactory::class);
 	}
 
 	/**
@@ -102,59 +85,33 @@ class ExtTablesInclusion implements \TYPO3\CMS\Core\Database\TableConfigurationP
 		if(!ExtensionManagementUtility::isLoaded("dataviewer"))
 			return;
 
-		// We need to create a dirty try-catch here, since we have nothing better to check for existence of many different needs
+		// We raw-create the tca information here and are ignoring all errors that could happen, just
+		// to let TYPO3 live
 		try {
 			// We need to fetch all fields of the types, we have here, so we can pre-load the tca into the GLOBALS here
 			$fields = $this->fieldRepository->findAll(false);
-
-			/* @var \MageDeveloper\Dataviewer\Domain\Model\Record $record */
-			$record = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Model\Record::class);
 
 			foreach($fields as $_field)
 			{
 				if($_field instanceof Field)
 				{
-					$fieldtypeConfiguration = $this->fieldtypeSettingsService->getFieldtypeConfiguration($_field->getType());
+					$tca = $this->tcaFactory->generateByField($_field);
+					$actualFieldName = $tca["fieldName"];
 
-					if($fieldtypeConfiguration)
-					{
-						/* @var \MageDeveloper\Dataviewer\Domain\Model\Field $_field */
-						$fieldId = $_field->getUid();
-						$type = $_field->getType();
-						$class = $fieldtypeConfiguration->getFieldClass();
+					// We only can store normal fields except the RTE field (that is named
+					// '<id>_rte') because since TYPO3 8+
+					// the RTE field is retrieved from the database when checkValue is called - but
+					// we don't use that default database stuff in dataviewer since its all virtual
+					if(is_numeric($actualFieldName)) {
+						$config = $tca["processedTca"]["columns"][$actualFieldName]["config"];
 
-						if($this->objectManager->isRegistered($class))
-						{
-							/* @var \MageDeveloper\Dataviewer\Form\Fieldtype\AbstractFieldtype $fieldtype */
-							$fieldtype = $this->objectManager->get($class);
-							$fieldtype->formDataProviders = [];
-							$fieldtype->setField($_field);
-							$fieldtype->setRecord($record);
-
-							// Removing type to prevent items generation
-							$_field->setType("");
-
-							$tca = $fieldtype->buildTca();
-							$actualFieldName = $tca["fieldName"];
-
-							$_field->setType($type);
-
-							// We only can store normal fields except the RTE field (that is named
-							// '<id>_rte') because since TYPO3 8+
-							// the RTE field is retrieved from the database when checkValue is called
-							if(is_numeric($actualFieldName)) {
-								$config = $tca["processedTca"]["columns"][$actualFieldName]["config"];
-
-								// Injecting the virtual tca into the globals for later usage
-								$GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"][$actualFieldName]["config"] = $config;
-							}
-
-						}
+						// Injecting the virtual tca into the globals for later usage
+						$GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"][$actualFieldName]["config"] = $config;
 					}
-					
+
 				}
 			}
-
+			
 		} catch (\Exception $e)	{
 			return;
 		}
