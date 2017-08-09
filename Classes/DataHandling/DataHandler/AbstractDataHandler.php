@@ -87,6 +87,17 @@ class AbstractDataHandler
 		$this->fieldtypeSettingsService	= $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService::class);
 	}
 
+    /**
+     *  If set, then transformations are NOT performed on the input.
+     *
+     * @param bool $value
+     * @return void
+     */
+	public function setDontProcessTransformations($value = true)
+    {
+        $this->dataHandler->dontProcessTransformations = (bool)$value;
+    }
+
 	/**
 	 * Adds a flash message to the backend
 	 *
