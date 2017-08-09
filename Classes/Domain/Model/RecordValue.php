@@ -42,13 +42,6 @@ class RecordValue extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 	protected $fieldValue = NULL;
 
 	/**
-	 * Field is deleted
-	 *
-	 * @var boolean
-	 */
-	protected $deleted = FALSE;
-
-	/**
 	 * Search Var
 	 *
 	 * @var string
@@ -126,27 +119,6 @@ class RecordValue extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 	public function hasUid()
 	{
 		return ($this->getUid() > 0);
-	}
-
-	/**
-	 * Gets the deleted status
-	 *
-	 * @return boolean
-	 */
-	public function isDeleted()
-	{
-		return $this->deleted;
-	}
-
-	/**
-	 * Sets the record value deleted
-	 *
-	 * @param boolean $deleted
-	 * @return void
-	 */
-	public function setDeleted($deleted)
-	{
-		$this->deleted = $deleted;
 	}
 
 	/**

@@ -66,13 +66,6 @@ class Datatype extends AbstractModel
 	protected $hideAdd = false;
 
 	/**
-	 * Datatype is hidden
-	 *
-	 * @var boolean
-	 */
-	protected $hidden = FALSE;
-
-	/**
 	 * Datatype - Field Relations
 	 * 
 	 * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\MageDeveloper\Dataviewer\Domain\Model\Field>
@@ -282,39 +275,7 @@ class Datatype extends AbstractModel
 	{
 		$this->hideAdd = $hideAdd;
 	}
-	
-	
 
-	/**
-	 * Checks if the fieldvalue is hidden
-	 *
-	 * @return bool
-	 */
-	public function isHidden()
-	{
-		return $this->hidden;
-	}
-
-	/**
-	 * Sets the hidden status
-	 *
-	 * @param bool $hidden
-	 */
-	public function setHidden($hidden)
-	{
-		$this->hidden = $hidden;
-	}
-
-	/**
-	 * Gets the hidden status
-	 *
-	 * @return bool
-	 */
-	public function getHidden()
-	{
-		return $this->hidden;
-	}
-	
 	/**
 	 * Adds a Field
 	 * 
