@@ -13,6 +13,7 @@ use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Html\RteHtmlParser;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Utility\File\BasicFileUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -760,73 +761,121 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 				$_value = $this->flexTools->flexArray2Xml($_value);
 			}
 
-			// We need to check the field
-			// We get the tca from the fieldtype class
-			// We check agains checkValue_SW in the dataHandler
-			/* @var \MageDeveloper\Dataviewer\Domain\Model\Fieldtype $fieldtype */
-			$fieldtypeConfiguration = $this->fieldtypeSettingsService->getFieldtypeConfiguration($field->getType());
-			$class = $fieldtypeConfiguration->getFieldClass();
 
-			if($this->objectManager->isRegistered($class))
-			{
-				$this->dataHandler->BE_USER		= $GLOBALS["BE_USER"];
 
-				/* @var \MageDeveloper\Dataviewer\Form\Fieldtype\FieldtypeInterface $fieldtypeModel */
-				$fieldtypeModel = $this->objectManager->get($class);
+			// DataHandler Preparations
+			$this->dataHandler->BE_USER	= $GLOBALS["BE_USER"];
+			$this->dataHandler->fileFunc = $this->objectManager->get(BasicFileUtility::class);
 
-				$fieldtypeModel->setField($field);
-				$fieldtypeModel->setRecord($record);
-
-				$tca = $fieldtypeModel->getFieldTca();
-
-				$res = [];
-				$uploadedFiles = [];
-
-				if(isset($this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()]))
-					$uploadedFiles = $this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()];
-
-				$val = $this->dataHandler->checkValue_SW(
-					$res,
-					$_value,
-					$tca,
-					"tx_dataviewer_domain_model_record",
-					$record->getUid(),
-					$_value,
-					"new",
-					$record->getPid(),
-					"[tx_dataviewer_domain_model_record:{$record->getUid()}:{$field->getUid()}]",
-					$field->getUid(),
-					$uploadedFiles,
-					$record->getPid(),
-					[]
-				);
-
-				// Select and Inline Value
-				if(array_key_exists("value", $val) && $tca["type"] !== "select" && $tca["type"] !== "inline")
-					$_value = $val["value"];
-
-				if ($tca["type"] == "inline")
-				{
-					// We divorce the values and set them back together
-					$values = GeneralUtility::trimExplode(",", $_value, true);
-					$_value = [];
-					foreach($values as $v)
-						if ($v) $_value[] = $v;
-
-					$_value = implode(",", $_value);
-				}
-
-				if($field->getType() == "rte")
-				{
-					// Initialize transformation:
-					/* @var RteHtmlParser $parseHTML */
-					$parseHTML = GeneralUtility::makeInstance(RteHtmlParser::class);
-					$parseHTML->init("tt_content" . ':' . "bodytext", $record->getPid()); // We imitate a tt_content bodytext field
-					// Perform transformation for value -> db:
-					$_value = $parseHTML->TS_transform_db($_value);
-				}
+			$overallTca = $this->tcaFactory->generateByField($field, $record, true);
+			$tca = $overallTca["processedTca"]["columns"][$_fieldId]["config"];
+	
+			$res = [];
+			$uploadedFiles = [];
+			if(isset($this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()])) {
+				$uploadedFiles = $this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()];
 			}
 			
+			// We check agains checkValue_SW in the dataHandler
+			$val = $this->dataHandler->checkValue_SW(
+				$res,
+				$_value,
+				$tca,
+				"tx_dataviewer_domain_model_record",
+				$record->getUid(),
+				$_value,
+				"new",
+				$record->getPid(),
+				"[tx_dataviewer_domain_model_record:{$record->getUid()}:{$field->getUid()}]",
+				$field->getUid(),
+				$uploadedFiles,
+				$record->getPid(),
+				[]
+			);
+			
+			// Select and Inline Value
+			if(array_key_exists("value", $val) && $tca["type"] !== "select" && $tca["type"] !== "inline")
+				$_value = $val["value"];
+
+			if ($tca["type"] == "inline")
+			{
+				// We divorce the values and set them back together
+				$values = GeneralUtility::trimExplode(",", $_value, true);
+				$_value = [];
+				foreach($values as $v)
+					if ($v) $_value[] = $v;
+
+				$_value = implode(",", $_value);
+			}
+
+			if($field->getType() == "rte")
+			{
+				// Initialize transformation:
+				/* @var RteHtmlParser $parseHTML */
+				$parseHTML = GeneralUtility::makeInstance(RteHtmlParser::class);
+				$parseHTML->init("tt_content" . ':' . "bodytext", $record->getPid()); // We imitate a tt_content bodytext field
+				// Perform transformation for value -> db:
+				$_value = $parseHTML->TS_transform_db($_value);
+			}
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			$result = $this->_saveRecordValue($record, $field, $_value, $this->languageUid);
 
 			if (!$result)
