@@ -1092,6 +1092,7 @@ class RecordController extends AbstractController
 	protected function getStandaloneView($includeVariables = false)
 	{
 		$view = $this->objectManager->get(\MageDeveloper\Dataviewer\Fluid\View\StandaloneView::class);
+		$view->assign("settings", $this->settings);
 
 		if($includeVariables === true)
 		{
