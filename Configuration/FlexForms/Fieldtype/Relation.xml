@@ -71,7 +71,7 @@
                     </config>
                 </TCEforms>
             </enabledControls>
-            <allowedFileExtensions>
+            <allowed>
                 <TCEforms>
                     <label>LLL:EXT:dataviewer/Resources/Private/Language/locallang_csh_tx_dataviewer_domain_model_field.xlf:format.allowed_file_extensions</label>
                     <config>
@@ -80,7 +80,7 @@
                         <default>gif,jpg,png</default>
                     </config>
                 </TCEforms>
-            </allowedFileExtensions>
+            </allowed>
         </el>
     </ROOT>
 </T3DataStructure>

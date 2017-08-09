@@ -40,7 +40,7 @@
                     <config>
                         <type>input</type>
                         <size>15</size>
-                        <default>php,php5</default>
+                        <default>*</default>
                     </config>
                 </TCEforms>
             </disallowed>
