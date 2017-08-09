@@ -72,7 +72,9 @@ class Fluid extends AbstractFieldvalue implements FieldvalueInterface
 		foreach($items as $_fielditem)
 		{
 			$fluidSource = reset($_fielditem);
-			$rendered = $this->_getView()->renderSource($fluidSource);
+			$view = $this->_getView();
+			$view->setTemplateSource($fluidSource);
+			$rendered = $view->render();
 			$html .= $rendered;
 		}
 
