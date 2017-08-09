@@ -17,12 +17,12 @@ class ValueViewHelper extends \MageDeveloper\Dataviewer\ViewHelpers\AbstractView
 	 * Fetch a record value
 	 *
 	 * @param \MageDeveloper\Dataviewer\Domain\Model\Record $record
-	 * @param string $field
+	 * @param int $fieldId
 	 * @return \MageDeveloper\Dataviewer\Domain\Model\Value|null
 	 */
-	public function render(\MageDeveloper\Dataviewer\Domain\Model\Record $record, $field)
+	public function render(\MageDeveloper\Dataviewer\Domain\Model\Record $record, $fieldId)
 	{
-		return $record->getValueByFieldId($field);
+		return $record->getValueByFieldId($fieldId);
 	}
 
 }

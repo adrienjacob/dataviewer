@@ -57,32 +57,11 @@ class Record extends AbstractModel
 	protected $recordValues = NULL;
 
 	/**
-	 * Field is deleted
-	 *
-	 * @var boolean
-	 */
-	protected $deleted = FALSE;
-
-	/**
-	 * Record Timestamp
-	 *
-	 * @var int
-	 */
-	protected $tstamp;
-
-	/**
 	 * Record Sorting
 	 *
 	 * @var int
 	 */
 	protected $sorting;
-
-	/**
-	 * Field is hidden
-	 *
-	 * @var boolean
-	 */
-	protected $hidden = FALSE;
 
 	/**
 	 * Parent Record
@@ -377,31 +356,10 @@ class Record extends AbstractModel
 	}
 
 	/**
-	 * Gets the deleted status
-	 *
-	 * @return boolean
-	 */
-	public function isDeleted()
-	{
-		return $this->deleted;
-	}
-
-	/**
-	 * Sets the record value deleted
-	 *
-	 * @param boolean $deleted
-	 * @return void
-	 */
-	public function setDeleted($deleted)
-	{
-		$this->deleted = $deleted;
-	}
-
-	/**
 	 * Gets an according record value by a field
 	 *
 	 * @param \MageDeveloper\Dataviewer\Domain\Model\Field $field
-	 * @return \MageDeveloper\Dataviewer\Domain\Model\RecordValue|bool
+	 * @return \MageDeveloper\Dataviewer\Domain\Model\RecordValue|null
 	 */
 	public function getRecordValueByField(\MageDeveloper\Dataviewer\Domain\Model\Field $field)
 	{
@@ -418,28 +376,7 @@ class Record extends AbstractModel
 			}
 		}
 
-		return false;
-	}
-
-	/**
-	 * Gets the timestamp
-	 *
-	 * @return int
-	 */
-	public function getTstamp()
-	{
-		return $this->tstamp;
-	}
-
-	/**
-	 * Sets the timestamp
-	 *
-	 * @param int $tstamp
-	 * @return void
-	 */
-	public function setTstamp($tstamp)
-	{
-		$this->tstamp = $tstamp;
+		return null;
 	}
 
 	/**
@@ -461,36 +398,6 @@ class Record extends AbstractModel
 	public function setSorting($sorting)
 	{
 		$this->sorting = $sorting;
-	}
-
-	/**
-	 * Checks if the fieldvalue is hidden
-	 *
-	 * @return bool
-	 */
-	public function isHidden()
-	{
-		return $this->hidden;
-	}
-
-	/**
-	 * Sets the hidden status
-	 *
-	 * @param bool $hidden
-	 */
-	public function setHidden($hidden)
-	{
-		$this->hidden = $hidden;
-	}
-
-	/**
-	 * Gets the hidden status
-	 *
-	 * @return bool
-	 */
-	public function getHidden()
-	{
-		return $this->hidden;
 	}
 
 	/**
@@ -684,5 +591,25 @@ class Record extends AbstractModel
 			$this->initializeValue($_field);
 
 		return;
+	}
+
+	/**
+	 * Gets all values
+	 *
+	 * @return \MageDeveloper\Dataviewer\Domain\Model\Value[]
+	 */
+	public function getAllValues()
+	{
+		$this->initializeValues();
+		$values = $this->getValues();
+
+		$allValues = [];
+		foreach($values->getItems() as $_value)
+		{
+			/* @var \MageDeveloper\Dataviewer\Domain\Model\Value $_value */
+			$allValues[$_value->getField()->getCode()] = $_value;
+		}
+
+		return $allValues;
 	}
 }

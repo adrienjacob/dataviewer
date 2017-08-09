@@ -1,11 +1,16 @@
 <?php
 namespace MageDeveloper\Dataviewer\DataHandling\DataHandler;
 
-use MageDeveloper\Dataviewer\Utility\ArrayUtility;
-use MageDeveloper\Dataviewer\Utility\LocalizationUtility as Locale;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
+use MageDeveloper\Dataviewer\DataHandling\DataHandler;
+use MageDeveloper\Dataviewer\Factory\TcaFactory;
+use MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage;
+use MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService;
+use TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -42,7 +47,7 @@ class AbstractDataHandler
 	 * @inject
 	 */
 	protected $dataHandler;
-	
+
 	/**
 	 * Flexform Tools
 	 *
@@ -53,11 +58,19 @@ class AbstractDataHandler
 
 	/**
 	 * Fieldtype Settings Service
-	 * 
+	 *
 	 * @var \MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService
 	 * @inject
 	 */
 	protected $fieldtypeSettingsService;
+
+	/**
+	 * Tca Factory
+	 *
+	 * @var \MageDeveloper\Dataviewer\Factory\TcaFactory
+	 * @inject
+	 */
+	protected $tcaFactory;
 
 	/**
 	 * @var \MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage
@@ -74,7 +87,7 @@ class AbstractDataHandler
 
 	/**
 	 * Save Data
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $saveData = [];
@@ -86,13 +99,25 @@ class AbstractDataHandler
 	 */
 	public function __construct()
 	{
-		$this->objectManager 			= \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
-		$this->persistenceManager 		= $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class);
-		$this->dataHandler				= $this->objectManager->get(\MageDeveloper\Dataviewer\DataHandling\DataHandler::class);
-		$this->flexTools 				= $this->objectManager->get(\TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools::class);
-		$this->fieldtypeSettingsService	= $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Settings\FieldtypeSettingsService::class);
-		$this->extbaseEnforceLanguageService = $this->objectManager->get(\MageDeveloper\Dataviewer\Persistence\Generic\Backend\ExtbaseEnforceLanguage::class);
+		$this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+		$this->persistenceManager = $this->objectManager->get(PersistenceManager::class);
+		$this->dataHandler = $this->objectManager->get(DataHandler::class);
+		$this->flexTools = $this->objectManager->get(FlexFormTools::class);
+		$this->fieldtypeSettingsService	= $this->objectManager->get(FieldtypeSettingsService::class);
+		$this->tcaFactory = $this->objectManager->get(TcaFactory::class);
+		$this->extbaseEnforceLanguageService = $this->objectManager->get(ExtbaseEnforceLanguage::class);
 	}
+
+    /**
+     *  If set, then transformations are NOT performed on the input.
+     *
+     * @param bool $value
+     * @return void
+     */
+    public function setDontProcessTransformations($value = true)
+    {
+        $this->dataHandler->dontProcessTransformations = (bool)$value;
+    }
 
 	/**
 	 * Adds a flash message to the backend
@@ -154,7 +179,7 @@ class AbstractDataHandler
 				'returnUrl' => GeneralUtility::getIndpEnv('REQUEST_URI')
 			]
 		);
-	
+
 		\TYPO3\CMS\Core\Utility\HttpUtility::redirect($url);
 		exit();
 	}
@@ -169,7 +194,7 @@ class AbstractDataHandler
 	{
 		$getParameters = GeneralUtility::_GET();
 		$parameters = array_merge($getParameters, $parameters);
-		
+
 		$link = GeneralUtility::linkThisScript($parameters);
 		\TYPO3\CMS\Core\Utility\HttpUtility::redirect( GeneralUtility::sanitizeLocalUrl($link) );
 		exit();
@@ -217,7 +242,7 @@ class AbstractDataHandler
 
 	/**
 	 * Processes uploads
-	 * 
+	 *
 	 * @param array $files
 	 */
 	protected function _processUploads($files)

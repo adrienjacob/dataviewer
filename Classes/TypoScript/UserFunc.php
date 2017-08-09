@@ -16,6 +16,36 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @copyright   Magento Developers / magedeveloper.de <kontakt@magedeveloper.de>
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+
+/**
+ * Class UserFunc
+ * --------------
+ * 
+ * This userFunc renders fluid in TypoScript and automatically can insert a dynamic record,
+ * if the concurrent page has record parameters when called.
+ * 
+ * Here is a fully featured example of how this userFunc can help you, rendering a Meta-Description
+ * from the current loaded record.
+ *
+ * page.headerData.customMetaDescription = USER_INT
+ * page.headerData.customMetaDescription.userFunc = MageDeveloper\Dataviewer\TypoScript\UserFunc->renderTextFromRecord
+ * # Adding the current Page Title to the template
+ * page.headerData.customMetaDescription.parameter {
+ *   pageTitle = TEXT
+ *   pageTitle {
+ *     insertData = 1
+ *     data = page : title
+ *     wrap = |
+ *   }
+ * }
+ * 
+ * page.headerData.customMetaDescription.value (
+ * <f:if condition="{record.metadescription.value}">
+ *    <meta name="description" content="{pageTitle}: {record.metadescription.value}" />
+ * </f:if>
+ * )
+ * @package MageDeveloper\Dataviewer\TypoScript
+ */ 
 class UserFunc
 {
 	/**
@@ -113,8 +143,7 @@ class UserFunc
 
 		}
 
-		if(isset($parameters[$recordsVariableName]))
-		{
+		if(isset($parameters[$recordsVariableName])) {
 			$records = [];
 			$recordUids = GeneralUtility::trimExplode(",", $parameters[$recordsVariableName]);
 
@@ -124,8 +153,8 @@ class UserFunc
 			// Assigning the record
 			$this->standaloneView->assign($recordsVariableName, $records);
 		}
-		else
-		{
+		else {
+			
 			if(isset($parameters[$recordVariableName]))
 				$record = $this->recordRepository->findByUid($parameters[$recordVariableName]);
 			else
@@ -156,8 +185,7 @@ class UserFunc
 			$this->standaloneView->setTemplateSource($source);
 			$rendered = $this->standaloneView->render();
 		}
-		catch (\Exception $e)
-		{
+		catch (\Exception $e) {
 
 		}
 

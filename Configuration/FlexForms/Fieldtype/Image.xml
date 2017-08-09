@@ -41,6 +41,7 @@
                     <config>
                         <type>input</type>
                         <size>15</size>
+                        <default>*</default>
                     </config>
                 </TCEforms>
             </disallowed>

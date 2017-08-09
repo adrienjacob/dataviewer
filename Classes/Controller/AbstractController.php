@@ -417,6 +417,8 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	{
 		$view = $this->objectManager->get(\MageDeveloper\Dataviewer\Fluid\View\StandaloneView::class);
 
+		$view->assign("settings", $this->settings);
+
 		if($includeVariables === true)
 		{
 			$pids = $this->storagePids;

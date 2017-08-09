@@ -41,6 +41,17 @@
                     </config>
                 </TCEforms>
             </renderType>
+            <size>
+                <TCEforms>
+                    <label>size</label>
+                    <config>
+                        <type>input</type>
+                        <size>3</size>
+                        <eval>int</eval>
+                        <default>5</default>
+                    </config>
+                </TCEforms>
+            </size>
             <minitems>
                 <TCEforms>
                     <label>minitems</label>
