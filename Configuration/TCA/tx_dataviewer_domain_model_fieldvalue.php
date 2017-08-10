@@ -188,7 +188,7 @@ return [
 			'config' => [
 				'type' => 'text',
 				'renderType' => 't3editor',
-				'format' => 'typoscript',
+				'format' => 'mixed',
 				'cols' => 40,
 				'rows' => 10,
 				'eval' => 'trim',
