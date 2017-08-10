@@ -169,6 +169,13 @@ class Field extends AbstractModel
 	protected $templatefile = '';
 
 	/**
+	 * Configuration
+	 * 
+	 * @var array
+	 */
+	protected $config = [];
+
+	/**
 	 * __construct
 	 */
 	public function __construct()
@@ -716,6 +723,18 @@ class Field extends AbstractModel
 	}
 
 	/**
+	 * Overrides or sets a configuration
+	 * 
+	 * @param string $name
+	 * @param mixed $value
+	 * @return void
+	 */
+	public function setConfig($name, $value)
+	{
+		$this->config[$name] = $value;
+	}
+
+	/**
 	 * Gets a specific format configuration value
 	 * 
 	 * @param string $confValueName
@@ -723,11 +742,15 @@ class Field extends AbstractModel
 	 */
 	public function getConfig($confValueName)
 	{
-		$fieldConf = $this->getFieldConf();
-		$flexformConfig = $this->flexFormService->convertFlexFormContentToArray($fieldConf);
+		if(empty($this->config)) {
+			$fieldConf = $this->getFieldConf();
+			$flexformConfig = $this->flexFormService->convertFlexFormContentToArray($fieldConf);
 		
-		if(isset($flexformConfig[$confValueName]))
-			return $flexformConfig[$confValueName];
+			$this->config = array_merge($flexformConfig, $this->config);
+		}
+	
+		if(isset($this->config[$confValueName]))
+			return $this->config[$confValueName];
 			
 		return;	
 	}
