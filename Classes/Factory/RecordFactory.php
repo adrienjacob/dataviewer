@@ -179,6 +179,8 @@ class RecordFactory implements SingletonInterface
 			);
 		}
 
+		$this->recordDataHandler->setDontProcessTransformations(true);
+
 		/////////////////////////////////////////////////
 		// Signal-Slot 'updatePreProcess'              //
 		/////////////////////////////////////////////////
@@ -190,13 +192,12 @@ class RecordFactory implements SingletonInterface
 		else
 			$traversedFieldArray = $updateFieldArray;
 
-		
 		$recordValues = $record->getRecordValues();
 		
 		$originalRecordFieldArray = [];
 		foreach($recordValues as $_recordValue) {
-			/* @var RecordValue $_recordValue */
-			$originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
+		    /* @var RecordValue $_recordValue */
+            $originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
 		}
 
 		$fieldArray = array_replace($originalRecordFieldArray, $traversedFieldArray);
