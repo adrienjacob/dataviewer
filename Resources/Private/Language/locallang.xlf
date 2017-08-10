@@ -129,6 +129,9 @@
             <trans-unit id="flexform.generate_output">
                 <source>Generated Output as Record Value to the Database</source>
             </trans-unit>
+            <trans-unit id="flexform.no_regeneration">
+                <source>Disable Regeneration: Value is only generated initially</source>
+            </trans-unit>
             <trans-unit id="flexform.selection_limit">
                 <source>Selection Limit</source>
             </trans-unit>

@@ -87,10 +87,101 @@ class Field
 
 		if (!$code) $code = "<em>generated on save</em>";
 
+		$table = $config["table"];
+		$uid = $row["uid"];
+		
+		$frontendLabelFieldName = "input[data-formengine-input-name=\"data[{$table}][{$uid}][frontend_label]\"]";
+		$variableNameFieldName 	= "input[data-formengine-input-name=\"data[{$table}][{$uid}][variable_name]\"]";
+		$variableValueFieldName = "input[name=\"data[{$table}][{$uid}][variable_name]\"]";
+		$generatedCodeFieldName = "div#generated_code";
+
+		$script = "
+		<script type=\"text/javascript\">
+			var currentFrontendLabel;
+			var currentVariableName;
+			var canChangeVariableName = false;
+			TYPO3.jQuery(function($) {
+			
+				var slug = function(str) {
+					str = str.replace(/^\s+|\s+$/g, ''); // trim
+					str = str.toLowerCase();
+					
+					// remove accents, swap ñ for n, etc
+					var from = \"ãàáäâẽèéëêìíïîõòóöôùúüûñç·/_,:;\";
+					var to   = \"aaaaaeeeeeiiiiooooouuuunc------\";
+					for (var i=0, l=from.length ; i<l ; i++) {
+						str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+					}
+						
+					str = str.replace(/[^a-z -]/g, '') // remove invalid chars
+							 .replace(/\s+/g, '') // collapse whitespace
+							 .replace(/-+/g, ''); // collapse dashes
+							 
+					return str;	     
+				};
+				
+				var fetchFrontendLabel = function() {
+					return $('{$frontendLabelFieldName}').val();
+				};
+				
+				var fetchVariableName = function() {
+					return $('{$variableValueFieldName}').val();
+				};
+				
+				currentFrontendLabel = fetchFrontendLabel();
+				currentVariableName = fetchVariableName();
+				
+				if (currentVariableName == '')
+					canChangeVariableName = true;
+	
+				// Changing the value when the frontend label field is changed
+				$('{$frontendLabelFieldName}').keyup(function(){
+					var str = $(this).val();
+					str = slug(str);
+					
+					// We can only change the variable name if it is empty
+					if (canChangeVariableName)
+					{
+						$('{$variableNameFieldName}').val(str);
+						$('{$variableValueFieldName}').val(str);
+						
+						var code = str;
+						if (code == '') {
+							code = '<em>generated on save</em>';
+						}
+						
+						$('{$generatedCodeFieldName}').html(code);
+					}
+				});
+					
+				// Changing the value when the variable_name field is changed
+				$('{$variableNameFieldName}').keyup(function(){
+					var str = $(this).val();
+					str = slug(str);
+					
+					if (str == '')
+						canChangeVariableName = true;
+					else
+						canChangeVariableName = false;
+					
+					var code = str;
+					if (code == '') {
+						code = '<em>generated on save</em>';
+					}
+						
+					$('{$generatedCodeFieldName}').html(code);
+					
+				});
+			
+			});
+		</script>
+		";
+
 		$html = "";
+		$html .= $script;
 		$html .= "<strong>{$title}</strong>";
 		$html .= "<span style=\"font-family: Courier, Courier new, monospace; font-size:16px; float:left; width:100%;\" class='callout callout-info'>";
-		$html .= '{'.$recordName.'.<strong>'.$code.'</strong>}';
+		$html .= '{'.$recordName.'.<div id="generated_code" style="display:inline; color:#F05C00; font-weight:700;"><strong>'.$code.'</strong></div>}';
 		$html .= "</span><br />";
 
 		return $html;

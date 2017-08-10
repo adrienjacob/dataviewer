@@ -30,12 +30,7 @@ class TypoScript extends AbstractFieldtype
 		{
 			// Show only field content in backend, when
 			// the checkbox is set
-			foreach($this->getFieldItems() as $_fielditem)
-			{
-				$typoScript = reset($_fielditem);
-				$renderedTypoScript = $this->typoScriptUtility->getTypoScriptValue($typoScript);
-				$html .= $renderedTypoScript;
-			}
+			$html .= $this->_getGeneratedValue();
 		}
 	
 		return [
@@ -49,5 +44,24 @@ class TypoScript extends AbstractFieldtype
 			'inlineData' => [],
 			'html' => $html,
 		];
+	}
+
+	/**
+	 * Gets the generated value for the field
+	 *
+	 * @return string
+	 */
+	protected function _getGeneratedValue()
+	{
+		// Show only field content in backend, when
+		// the checkbox is set
+		$html = "";
+		foreach ($this->getFieldItems() as $_fielditem) {
+			$typoScript = reset($_fielditem);
+			$renderedTypoScript = $this->typoScriptUtility->getTypoScriptValue($typoScript);
+			$html .= $renderedTypoScript;
+		}
+
+		return $html;
 	}
 }

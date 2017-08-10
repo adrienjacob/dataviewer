@@ -13,14 +13,23 @@ Changelog
 **2.1.0**
 
 - [FEATURE] Selectable Templates for Form Plugin
-- [TASK] Language compatibility (still under development)
-- [BUGFIX] Missing Storage Page Message
+- [TASK] Language compatibility (still in progress)
+- [BUGFIX] Missing Storage Page Message correctly implemented
 - [TASK] Removed Sorting by Fields in List Module because Bug #80874
 - [TASK] Composer preparation
 - [BUGFIX] Icons declaration for Plugins
 - [TASK] Smaller Box in FieldValue content field
 - [BUGFIX] Now showing records on Pid 0
 - [BUGFIX] Corrected Pid of new file relations when creating a new record
+- [BUGFIX] Created TcaFactory for generating field tca
+- [TASK] RecoryFactory::update now can update only single items
+- [BUGFIX] Corrected default 'disallowed' on file fields
+- [BUGFIX] Multiselect has now 'size' configuration
+- [TASK] Added useful information to the TypoScript/UserFunc
+- [TASK] Generated Tca is now stored to GLOBALS except RTE-fields
+- [TASK] Record-DataHandler is now using TcaFactory
+- [TASK] Signal/Slot in RecordFactory when Creating or Updating Records
+- [TASK] Disabling Regeneration of Fluid Fields now possible
 
 **2.0.2**
 

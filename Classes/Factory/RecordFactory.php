@@ -106,6 +106,8 @@ class RecordFactory implements SingletonInterface
 			);
 		}
 
+        $this->recordDataHandler->setDontProcessTransformations(true);
+
 		// Initiate a new record model
 		$record = $this->objectManager->get(Record::class);
 
@@ -173,6 +175,8 @@ class RecordFactory implements SingletonInterface
 				"Missing Datatype for Record Factory -> update", 1477057477
 			);
 		}
+
+        $this->recordDataHandler->setDontProcessTransformations(true);
 
 		/////////////////////////////////////////////////
 		// Signal-Slot 'updatePreProcess'              //
