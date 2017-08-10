@@ -708,7 +708,7 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 			return false;
 			
 		$this->_processRecordSaveData($record, $recordSaveData);
-
+		
 		return true;
 	}
 
@@ -723,13 +723,9 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 	{
 		$datatype = $record->getDatatype();
 
-		// Default reset the record title and store the previous title
-		$previousTitle = $record->getTitle(true);
-		$record->setTitle("");
-
 		if(isset($recordSaveData["hidden"]))
 			$record->setHidden((bool)$recordSaveData["hidden"]);
-
+			
 		///////////////////////////////////////////
 		// process all uploads
 		///////////////////////////////////////////
@@ -739,7 +735,13 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 		// We go through all fields of the datatype
 		///////////////////////////////////////////
 		$overallResult = null;
-
+		
+		if(isset($recordSaveData["title"]))
+			$record->setTitle($recordSaveData["title"]);
+		
+		if($record->hasTitleField())
+			$record->setTitle("");
+		
 		foreach($recordSaveData as $_fieldId=>$_value)
 		{
 			$originalValue = $_value;
@@ -760,8 +762,6 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 				$_value = $this->dataHandler->getFlexformValue($_value, $record, $field);
 				$_value = $this->flexTools->flexArray2Xml($_value);
 			}
-
-
 
 			// DataHandler Preparations
 			$this->dataHandler->BE_USER	= $GLOBALS["BE_USER"];
@@ -817,80 +817,11 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 				// Perform transformation for value -> db:
 				$_value = $parseHTML->TS_transform_db($_value);
 			}
-			
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 			$result = $this->_saveRecordValue($record, $field, $_value, $this->languageUid);
 
 			if (!$result)
 				$overallResult = false;
-
-		}
-
-		if($record->getTitle(true) == "")
-		{
-			// No title was set before, so we check, if a new title can be set from
-			// the recordSaveData
-			if(isset($recordSaveData["title"]))
-				$record->setTitle($recordSaveData["title"]);
-			else
-				$record->setTitle($previousTitle);
 
 		}
 
@@ -944,7 +875,6 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 
 			// We directly add the original recordvalue to the database
 			$this->recordValueRepository->add($origRecordValue);
-			$this->persistenceManager->persistAll();
 		}
 		
 		$recordValue = $origRecordValue;
@@ -1016,6 +946,9 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 		$recordValue->setValueContent($valueContent);
 		// Assign clean search string to the recordValue
 		$recordValue->setSearch($search);
+
+		// Pre-Persisting
+		$this->persistenceManager->persistAll();
 
 		// Add or update
 		if($recordValue->getUid() > 0)
