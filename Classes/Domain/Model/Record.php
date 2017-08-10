@@ -250,14 +250,10 @@ class Record extends AbstractModel
 	/**
 	 * Gets the title
 	 *
-	 * @param bool $raw
 	 * @return string
 	 */
-	public function getTitle($raw = false)
+	public function getTitle()
 	{
-		if (!$this->title && $this->getDatatype() && $raw === false)
-			return \MageDeveloper\Dataviewer\Utility\LocalizationUtility::translate("entry", $this->getDatatype()->getName());
-
 		return $this->title;
 	}
 
