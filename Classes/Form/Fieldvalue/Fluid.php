@@ -2,6 +2,7 @@
 namespace MageDeveloper\Dataviewer\Form\Fieldvalue;
 
 use MageDeveloper\Dataviewer\Domain\Model\Field;
+use MageDeveloper\Dataviewer\Domain\Model\RecordValue;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -105,7 +106,7 @@ class Fluid extends AbstractFieldvalue implements FieldvalueInterface
 	 * Gets the final frontend value, that is
 	 * pushed in {record.field.value}
 	 *
-	 * This or these values are the most different
+	 * This or these values are the most different;
 	 * part of the whole output, so if you handle
 	 * this, you need to have some knowledge,
 	 * what value is returned.
@@ -114,6 +115,19 @@ class Fluid extends AbstractFieldvalue implements FieldvalueInterface
 	 */
 	public function getFrontendValue()
 	{
+		$regenerate = !(bool)$this->getField()->getConfig("disableRegeneration");
+		
+		// Return the value content, because we don't need a regeneration
+		if(!$regenerate && $this->getRecordValue() instanceof RecordValue) {
+			// We check, if it is not allowed to regenerate and the
+			// valuecontent is set in the recordvalue
+			// is the uid of the record value is set, it was generated before
+			if(!is_null($this->getRecordValue()->getUid())) {
+				return $this->getRecordValue()->getValueContent();
+			}
+		
+		}
+		
 		return $this->_renderSource();
 	}
 

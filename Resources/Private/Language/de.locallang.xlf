@@ -170,6 +170,10 @@
                 <source>Generated Output as Record Value to the Database</source>
                 <target>Generierte Ausgabe der Datenbank als Eintrag hinzufügen</target>
             </trans-unit>
+            <trans-unit id="flexform.no_regeneration">
+                <source>Disable Regeneration: Value is only generated initially</source>
+                <target>Neugenerierung deaktivieren: Wert wird nur initial geneneriert</target>
+            </trans-unit>
             <trans-unit id="flexform.selection_limit">
                 <source>Selection Limit</source>
                 <target>Auswahllimitierung</target>

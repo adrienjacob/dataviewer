@@ -2,6 +2,7 @@
 namespace MageDeveloper\Dataviewer\Form\Fieldtype;
 
 use MageDeveloper\Dataviewer\Domain\Model\Field;
+use MageDeveloper\Dataviewer\Domain\Model\Record;
 use MageDeveloper\Dataviewer\Domain\Model\RecordValue;
 use MageDeveloper\Dataviewer\Fluid\View\StandaloneView;
 use TYPO3\CMS\Backend\Form\Container\SingleFieldContainer;
@@ -48,19 +49,19 @@ class Fluid extends AbstractFieldtype
 	public function render()
 	{
 		$html = "";
-		if($this->getField()->getConfig("showInBackend"))
-		{
-			// Show only field content in backend, when
-			// the checkbox is set
-			$view = $this->_getStandaloneView();
-			$view->assign("record", $this->getRecord());
 
-			foreach($this->getFieldItems() as $_fielditem)
-			{
-				$fluidSource = reset($_fielditem);
-				$rendered = $view->renderSource($fluidSource);
-				$html .= $rendered;
+		// We check, if the value has to be regenerated
+		$regenerate = !(bool)$this->getField()->getConfig("disableRegeneration");
+		
+		if($this->getField()->getConfig("showInBackend")) {
+
+			if($regenerate) {
+				$html .= $this->_getGeneratedValue();
 			}
+			else {
+				$html .= $this->getValue();
+			}
+
 		}
 
 		if($this->getField()->getConfig("generateOutput"))
@@ -82,4 +83,27 @@ class Fluid extends AbstractFieldtype
 			'html' => $html,
 		];
 	}
+
+	/**
+	 * Gets the generated value for the field
+	 * 
+	 * @return string
+	 */
+	protected function _getGeneratedValue()
+	{
+		// Show only field content in backend, when
+		// the checkbox is set
+		$view = $this->_getStandaloneView();
+		$view->assign("record", $this->getRecord());
+		
+		$html = "";
+		foreach ($this->getFieldItems() as $_fielditem) {
+			$fluidSource = reset($_fielditem);
+			$rendered    = $view->renderSource($fluidSource);
+			$html       .= $rendered;
+		}
+		
+		return $html;
+	}
+	
 }
