@@ -451,7 +451,7 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 */
 	protected function _replaceMarkersInString($string)
 	{
-		return $this->getStandaloneView(true)->renderSource($string);
+		return $this->getStandaloneView(true)->renderSource((string)$string);
 	}
 
 	/**
