@@ -166,55 +166,67 @@ class RecordFactory implements SingletonInterface
 	 * @return bool
 	 * @throws \MageDeveloper\Dataviewer\Exception\NoDatatypeException
 	 */
-	public function update(Record $record, array $updateFieldArray, $traverse = true)
-	{
-		// The record data has to contain a datatype
-		if(!$record->getDatatype() instanceof Datatype)
-		{
-			throw new \MageDeveloper\Dataviewer\Exception\NoDatatypeException(
-				"Missing Datatype for Record Factory -> update", 1477057477
-			);
-		}
+    public function update(Record $record, array $updateFieldArray, $traverse = true)
+    {
+        // The record data has to contain a datatype
+        if(!$record->getDatatype() instanceof Datatype)
+        {
+            throw new \MageDeveloper\Dataviewer\Exception\NoDatatypeException(
+                "Missing Datatype for Record Factory -> update", 1477057477
+            );
+        }
 
         $this->recordDataHandler->setDontProcessTransformations(true);
 
-		/////////////////////////////////////////////////
-		// Signal-Slot 'updatePreProcess'              //
-		/////////////////////////////////////////////////
-		$this->signalSlotDispatcher->dispatch(__CLASS__,"updatePreProcess",[&$updateFieldArray, &$this]);
+        /////////////////////////////////////////////////
+        // Signal-Slot 'updatePreProcess'              //
+        /////////////////////////////////////////////////
+        $this->signalSlotDispatcher->dispatch(__CLASS__,"updatePreProcess",[&$updateFieldArray, &$this]);
 
-		// Traverse the data into the relevant fieldId=>value information
-		if ($traverse)
-			$traversedFieldArray = $this->traverseFieldArray($updateFieldArray, $record->getDatatype());
-		else
-			$traversedFieldArray = $updateFieldArray;
-			
-		$recordValues = $record->getRecordValues();
+        // Traverse the data into the relevant fieldId=>value information
+        if ($traverse)
+            $traversedFieldArray = $this->traverseFieldArray($updateFieldArray, $record->getDatatype());
+        else
+            $traversedFieldArray = $updateFieldArray;
 
-		$originalRecordFieldArray = [];
-		foreach($recordValues as $_recordValue) {
-			/* @var RecordValue $_recordValue */
-			$originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
-		}
+        $recordValues = $record->getRecordValues();
 
-		$fieldArray = array_replace($originalRecordFieldArray, $traversedFieldArray);
+        $originalRecordFieldArray = [];
+        foreach($recordValues as $_recordValue) {
+            /* @var RecordValue $_recordValue */
+            if($_recordValue->getField() instanceof Field)
+                $originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
+        }
 
-		// Check for validation errors
-		$this->validationErrors = $this->recordDataHandler->validateFieldArray($fieldArray, $record->getDatatype());
+        // Adding array values as appended values
+        foreach($traversedFieldArray as $_fieldId=>$_value)
+        {
+            if(is_array($_value) && is_array($originalRecordFieldArray) && array_key_exists($_fieldId, $originalRecordFieldArray))
+            {
+                $parts = GeneralUtility::trimExplode(",", $originalRecordFieldArray[$_fieldId]);
+                $parts = array_merge($parts, $_value);
+                $traversedFieldArray[$_fieldId] = implode(",", $parts);
+            }
+        }
 
-		// We hide the record on any error
-		if(!empty($this->validationErrors))
-			$record->setHidden(true);
+        $fieldArray = array_replace($originalRecordFieldArray, $traversedFieldArray);
 
-		$result = $this->recordDataHandler->processRecord($fieldArray, $record);
+        // Check for validation errors
+        $this->validationErrors = $this->recordDataHandler->validateFieldArray($fieldArray, $record->getDatatype());
 
-		/////////////////////////////////////////////////
-		// Signal-Slot 'updatePostProcess'             //
-		/////////////////////////////////////////////////
-		$this->signalSlotDispatcher->dispatch(__CLASS__,"updatePostProcess",[&$record, &$fieldArray, &$this]);
+        // We hide the record on any error
+        if(!empty($this->validationErrors))
+            $record->setHidden(true);
 
-		return $record;
-	}
+        $result = $this->recordDataHandler->processRecord($fieldArray, $record);
+
+        /////////////////////////////////////////////////
+        // Signal-Slot 'updatePostProcess'             //
+        /////////////////////////////////////////////////
+        $this->signalSlotDispatcher->dispatch(__CLASS__,"updatePostProcess",[&$record, &$fieldArray, &$this]);
+
+        return $record;
+    }
 
 	/**
 	 * Regenerates dynamic values from an existing record
