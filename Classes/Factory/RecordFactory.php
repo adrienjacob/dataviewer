@@ -197,8 +197,20 @@ class RecordFactory implements SingletonInterface
 		$originalRecordFieldArray = [];
 		foreach($recordValues as $_recordValue) {
 		    /* @var RecordValue $_recordValue */
-            $originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
+		    if($_recordValue->getField() instanceof Field)
+                $originalRecordFieldArray[$_recordValue->getField()->getUid()] = $_recordValue->getValueContent();
 		}
+
+		// Adding array values as an appended value
+        foreach($traversedFieldArray as $_fieldId=>$_value)
+        {
+            if(is_array($_value) && is_array($originalRecordFieldArray) && array_key_exists($_fieldId, $originalRecordFieldArray))
+            {
+                $parts = GeneralUtility::trimExplode(",", $originalRecordFieldArray[$_fieldId]);
+                $parts = array_merge($parts, $_value);
+                $traversedFieldArray[$_fieldId] = implode(",", $parts);
+            }
+        }
 
 		$fieldArray = array_replace($originalRecordFieldArray, $traversedFieldArray);
 
@@ -218,6 +230,7 @@ class RecordFactory implements SingletonInterface
 
 		return $record;
 	}
+    
 
 	/**
 	 * Regenerates dynamic values from an existing record
