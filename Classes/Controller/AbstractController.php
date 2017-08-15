@@ -495,7 +495,8 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	protected function initializeView(ViewInterface $view)
 	{
 		// Inject current settings to the settings service
-		$this->pluginSettingsService->setSettings($this->settings);
+		if(is_array($this->settings))
+			$this->pluginSettingsService->setSettings($this->settings);
 	
 		// Individual session key
 		$uid = $this->_getContentUid();
