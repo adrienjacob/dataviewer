@@ -28,6 +28,13 @@ abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Reposit
 	protected $languageUid = null;
 
 	/**
+	 * Respect Sys Language
+	 * 
+	 * @var bool
+	 */
+	protected $resprectSysLanguage = false;
+
+	/**
 	 * AbstractRepository constructor.
 	 *
 	 * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager
@@ -77,6 +84,14 @@ abstract class AbstractRepository extends \TYPO3\CMS\Extbase\Persistence\Reposit
 	public function setLanguageUid($languageUid)
 	{
 		$this->languageUid = $languageUid;
+	}
+
+	/**
+	 * @param bool $setting
+	 */
+	public function setRespectSysLanguage($setting)
+	{
+		$this->respectSysLanguage = (bool)$setting;
 	}
 	
 	/**

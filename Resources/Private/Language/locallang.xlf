@@ -1014,6 +1014,9 @@
             <trans-unit id="sort.per_page">
                 <source>Items per Page</source>
             </trans-unit>
+            <trans-unit id="sort.disable">
+                <source>Sorting by Selection</source>
+            </trans-unit>
             <trans-unit id="sort.record_title">
                 <source>Title</source>
             </trans-unit>

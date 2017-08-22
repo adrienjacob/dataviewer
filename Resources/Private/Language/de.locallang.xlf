@@ -1343,6 +1343,10 @@
                 <source>Items per Page</source>
                 <target>Einträge pro Seite</target>
             </trans-unit>
+            <trans-unit id="sort.disable">
+                <source>Sorting by Selection</source>
+                <target>Sortierung nach Reihenfolge der Auswahl</target>
+            </trans-unit>
             <trans-unit id="sort.record_title">
                 <source>Title</source>
                 <target>Titel</target>

@@ -271,7 +271,7 @@ class RecordRepository extends AbstractRepository
 		$querySettings = $query->getQuerySettings();
 		$querySettings->setRespectStoragePage(!empty($storagePids));
 		$querySettings->setIgnoreEnableFields($includeHidden);
-		$querySettings->setRespectSysLanguage(false);
+		$querySettings->setRespectSysLanguage($this->respectSysLanguage);
 		$querySettings->setLanguageUid($this->languageUid);
 		$query->setQuerySettings($querySettings);
 
@@ -327,6 +327,10 @@ class RecordRepository extends AbstractRepository
 		$dataMapper = GeneralUtility::makeInstance(DataMapper::class);
 		$mapped = $dataMapper->map(Record::class, $result);
 		
+		
+		foreach($mapped as $_m)
+			echo $_m->getUid()."<br />";
+		
 		return $mapped;
 	}
 
@@ -375,12 +379,21 @@ class RecordRepository extends AbstractRepository
 	public function getStatementByAdvancedConditions(array $filters = [], $sortField = "title", $sortOrder = QueryInterface::ORDER_ASCENDING, $limit = null, array $storagePids = [])
 	{
 		$subSelectOrdering = "";
-		if(is_numeric($sortField))
-		{
+		if(is_numeric($sortField))	{
 			$fieldId = (int)$sortField;
 			$subSelectOrdering = ",";
 			$subSelectOrdering .= "(SELECT search FROM tx_dataviewer_domain_model_recordvalue AS SSRV WHERE SSRV.field = {$fieldId} AND SSRV.record = RECORD.uid AND SSRV.hidden = 0 AND SSRV.deleted = 0 LIMIT 1) AS sort";
 			$sortField = "sort";
+		} else if($sortField == "SELECTION") {
+			$sortField = "RECORD.uid";	// Resetting for fallback
+			// We need to find a filter, that contains our selection, so it should be the
+			// first one that has it's condition set to 'in'
+			foreach($filters as $_f) {
+				if ($_f["filter_condition"] == "in") {
+					$sortField = "FIELD(RECORD.uid, {$_f["field_value"]})";
+					break;
+				}
+			}
 		}
 
 		$defaultSelectFields = implode(",", $this->defaultSelectFields);
@@ -435,7 +448,7 @@ class RecordRepository extends AbstractRepository
 			$filterCondition 	= $_filter["filter_condition"];
 			$filterValue 		= $_filter["field_value"];
 			$filterCombination  = $_filter["filter_combination"];
-			$filterField		= (isset($_filter["filter_field"]))?$_filter["filter_field"]:"search";
+			$filterField		= (isset($_filter["filter_field"]) && strlen($_filter["filter_field"]))?$_filter["filter_field"]:"search";
 
 			$additionalWhereClause .= $this->_getSqlCondition($fieldId, $filterCondition, $filterValue, $filterCombination, $filterField)."\r\n";
 		}
@@ -515,6 +528,7 @@ class RecordRepository extends AbstractRepository
 				$cond = "{$searchField} NOT LIKE {$filterValue}"."";
 				break;
 			case "in":
+				if($filterValue == "") $filterValue = "0";	// Secure fallback
 				$cond = "{$searchField} IN ({$filterValue})"."";
 				break;
 			case "nin":
