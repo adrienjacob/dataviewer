@@ -60,7 +60,7 @@ class Record
 	{
 		if(TYPO3_MODE != "BE")
 			return;
-			
+
 		if (isset($pObj["row"]))
 		{
 			$row = $pObj["row"];

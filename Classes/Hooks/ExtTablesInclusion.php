@@ -82,7 +82,7 @@ class ExtTablesInclusion implements \TYPO3\CMS\Core\Database\TableConfigurationP
 		if (TYPO3_MODE !== "BE") {
 			return; 
 		}
-		
+
 		if(!ExtensionManagementUtility::isLoaded("dataviewer"))
 			return;
 

@@ -543,7 +543,7 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 
 			if($id != $this->mainRecordUid)
 				$recordSaveData["parent"] = $this->mainRecordUid;
-
+			
 			$result 		= $this->processRecord($recordSaveData, $record);
 
 			$message  = Locale::translate("record_not_saved");
@@ -748,7 +748,7 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 		// We go through all fields of the datatype
 		///////////////////////////////////////////
 		$overallResult = null;
-
+		
 		foreach($recordSaveData as $_fieldId=>$_value)
 		{
 			$originalValue = $_value;

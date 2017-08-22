@@ -81,7 +81,7 @@ class ValueFactory implements SingletonInterface
 		$value->setFieldvalue($fieldvalue);
 		$value->setRecordValue($recordValue);
 		$value->setField($field);
-
+		
 		return $value;
 	}
 
