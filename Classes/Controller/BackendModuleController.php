@@ -139,6 +139,8 @@ class BackendModuleController extends BackendController
 	public function recordsDetailsAction()
 	{
 		$this->_storeLastAction();
+		$this->recordRepository->setLanguageUid(0);
+		$this->recordRepository->setRespectSysLanguage(true);
 		$records = $this->recordRepository->findAll([$this->currentPageId], true, true);
 		$datatypes = $this->datatypeRepository->findAllOnPid($this->currentPageId);
 		

@@ -13,7 +13,7 @@
 			</tr>
 		</thead>
 		<tbody>
-		<f:for each="{record.values.items}" as="value" key="code" iteration="iteration">
+		<f:for each="{record.allValues}" as="value" key="code" iteration="iteration">
 			<tr class="{f:if(condition:'{iteration.isFirst}',then:' firstcol')}{f:if(condition:'{iteration.isLast}',then:' lastcol')}">
 				<td nowrap="nowrap" class="col-icon nowrap" valign="top">
 						<span title="{f:translate(key:'type.{value.field.type}')}">
