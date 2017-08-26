@@ -1687,6 +1687,10 @@
                 <source>%s - %s of %s</source>
                 <target>%s - %s von %s</target>
             </trans-unit>
+            <trans-unit id="show_all">
+                <source>Show all</source>
+                <target>Alle anzeigen</target>
+            </trans-unit>
 
             <trans-unit id="validator.alphanumeric">
                 <source>AlphaNumeric</source>

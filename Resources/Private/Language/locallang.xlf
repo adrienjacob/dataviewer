@@ -1276,6 +1276,9 @@
             <trans-unit id="records_of">
                 <source>%s - %s of %s</source>
             </trans-unit>
+            <trans-unit id="show_all">
+                <source>Show all</source>
+            </trans-unit>
 
             <trans-unit id="validator.alphanumeric">
                 <source>AlphaNumeric</source>
