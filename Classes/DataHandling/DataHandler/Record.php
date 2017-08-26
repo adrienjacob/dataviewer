@@ -828,10 +828,10 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
 
 				if($field->getType() == "rte")
 				{
-					// Corrections for saving an empty line
-					// This is just for compatibiliy issues to parent saved records
-					if(trim($_value) == "<p>&nbsp;</p>")
-						$_value = "";
+                    // Corrections for saving an empty line
+                    // This is just for compatibility issues to parent saved records
+                    if(trim($_value) == "<p>&nbsp;</p>" || trim($_value) == '')
+                        $_value = "";
 				
 					/* @var \MageDeveloper\Dataviewer\Form\Fieldtype\Rte $fieldtypeModel */
 					// Initialize transformation:
