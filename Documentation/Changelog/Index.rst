@@ -30,6 +30,9 @@ Changelog
 - [TASK] Record-DataHandler is now using TcaFactory
 - [TASK] Signal/Slot in RecordFactory when Creating or Updating Records
 - [TASK] Disabling Regeneration of Fluid Fields now possible
+- [TASK] Sorting by manual record selection
+- [TASK] Translation for 'Show all' in Pager
+- [TASK] Some DataViewer-Icons are now delivered as SVG
 
 **2.0.2**
 
