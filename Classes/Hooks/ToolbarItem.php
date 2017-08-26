@@ -197,7 +197,7 @@ class ToolbarItem implements ToolbarItemInterface
 	{
 		$title = "MageDeveloper DataViewer";
 		return '<span title="' . $title . '">' .
-			$this->iconFactory->getIcon('extensions-dataviewer-default', Icon::SIZE_SMALL)->render() .
+			$this->iconFactory->getIcon('dataviewer-ext-icon-svg', Icon::SIZE_SMALL)->render() .
 			'</span>';
 	}
 

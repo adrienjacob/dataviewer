@@ -62,7 +62,7 @@ class Logo
 		$version = ExtensionManagementUtility::getExtensionVersion("dataviewer");
 
 		$html = "";
-		$html .= "<img src=\"{$logoUrl}\" border=\"0\" alt=\"DataViewer\" title=\"DataViewer {$version}\" />";
+		$html .= "<img src=\"{$logoUrl}\" border=\"0\" alt=\"DataViewer\" title=\"DataViewer {$version}\" height=\"35\" />";
 		$html .= "<div style=\"margin-top:10px;\">Version <strong>{$version}</strong>&nbsp;| Mail:&nbsp;<a href=\"mailto:{$supportEmail}\">{$supportEmail}</a></div>";
 
         if(!$this->backendAccessService->disableDonationMessage())

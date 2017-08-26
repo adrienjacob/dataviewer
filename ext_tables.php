@@ -315,7 +315,7 @@ $boot = function ()
 			],
 			[	// Additional configuration
 				"access"    => "user,group",
-				"icon"      => "EXT:dataviewer/Resources/Public/Images/module_icon.png",
+				"icon"      => "EXT:dataviewer/Resources/Public/Images/module_icon.svg",
 				"labels" 	=> "LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf",
 			]
 		);

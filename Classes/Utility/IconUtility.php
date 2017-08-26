@@ -71,6 +71,9 @@ class IconUtility
 		$icons["dataviewer-icon-dataviewer_form"]   = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_form.gif";
 		$icons["dataviewer-icon-dataviewer_pager"]  = "EXT:dataviewer/Resources/Public/Icons/Plugins/dataviewer_pager.gif";
 
+		$icons["dataviewer-icon-logo-svg"] 			= "EXT:dataviewer/Resources/Public/Images/logo_dataviewer.svg";
+		$icons["dataviewer-ext-icon-svg"] 			= "EXT:dataviewer/ext_icon.svg";
+
 		return $icons;
 	}
 
