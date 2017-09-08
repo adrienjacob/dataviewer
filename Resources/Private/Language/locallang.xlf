@@ -1519,6 +1519,10 @@
             <trans-unit id="donate.please_donate">
                 <source>please donate</source>
             </trans-unit>
+
+            <trans-unit id="linkhandler.info">
+                <source>Please select a record to link. You will then be prompted to select a detail page for the record.</source>
+            </trans-unit>
             
         </body>
         

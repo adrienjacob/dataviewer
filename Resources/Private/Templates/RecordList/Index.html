@@ -1,0 +1,84 @@
+{namespace core=TYPO3\CMS\Core\ViewHelpers}
+{namespace dv=MageDeveloper\Dataviewer\ViewHelpers}
+{namespace be=TYPO3\CMS\Beuser\ViewHelpers}
+
+<style type="text/css">
+	div#dataviewer-record-select {}
+	div#dataviewer-record-select ul.recordList { padding:0; margin:0; list-style: none; }
+	div#dataviewer-record-select ul.recordList li { padding:2px; margin:2px 0; list-style: none; }
+	div#dataviewer-record-select ul.recordList li.selected { background-color:white; }
+	div#dataviewer_search_result { margin-top:20px; }
+	div#dataviewer-record-select div.loader { display:none; }
+	div#dataviewer-record-select div#pageTree { display:none; }
+	div#dataviewer-record-select div#selected_record { padding:5px; background-color: #fff; border:1px solid #c0c0c0; }
+</style>
+
+<div style="padding:25px;" id="dataviewer-record-select">
+	<f:image src="EXT:dataviewer/Resources/Public/Images/logo_dataviewer_text.png" height="25m" />
+	<hr style="background-color: #c0c0c0; color:#c0c0c0;" />
+	<p>
+		<f:translate key="LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:linkhandler.info" />
+	</p>
+
+	<table border="0" cellpadding="5" cellspacing="5" id="typo3-linkPages">
+		<tr>
+			<td class="c-wCell" valign="top" width="50%">
+
+				<input type="hidden" name="selectedRecord" id="selectedRecord" value="{selectedRecord.uid}" />
+
+				<h3><f:translate key="LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:selected_record" /></h3>
+				<div id="selected_record">
+					<f:if condition="{selectedRecord}">
+
+						<f:if condition="{selectedRecord.hidden}">
+							<f:then><core:icon identifier="extensions-dataviewer-{selectedRecord.datatype.icon}" size="small" overlay="overlay-hidden" /></f:then>
+							<f:else><core:icon identifier="extensions-dataviewer-{selectedRecord.datatype.icon}" size="small" /></f:else>
+						</f:if>
+						&nbsp;
+						[{selectedRecord.uid}]&nbsp;<span title="{selectedRecord.title}"><f:format.crop maxCharacters="35" respectWordBoundaries="FALSE">{selectedRecord.title}</f:format.crop></span>
+					</f:if>
+
+				</div>
+			
+				<h3><f:translate key="LLL:EXT:lang/locallang_common.xlf:search" /></h3>
+				<form action="{url}" method="post" style="padding:0;" id="dataviewer_search">
+					<input autocomplete="off" type="text" id="search" name="search" value="" placeholder="{f:translate(key:'LLL:EXT:lang/locallang_common.xlf:search')} ...">
+				</form>
+				<div id="dataviewer_search_result"></div>
+
+				<div class="loader">
+					<core:icon identifier="spinner-circle-dark" size="small" />
+					<span><f:translate key="LLL:EXT:lang/Resources/Private/Language/locallang.xlf:table.loadingRecords" /></span>
+				</div>
+
+				<f:if condition="{latest->f:count() > 0">
+					<hr />
+					<h3><f:translate key="LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:backend.latest" /></h3>
+					<ul class="recordList">
+						<f:for each="{latest}" as="record" iteration="j">
+							<li class="record" data-recordid="{record.uid}">
+								<a href="#" class="t3js-recordLink" data-id="{record.uid}">
+								<f:if condition="{record.hidden}">
+									<f:then><core:icon identifier="extensions-dataviewer-{record.datatype.icon}" size="small" overlay="overlay-hidden" /></f:then>
+									<f:else><core:icon identifier="extensions-dataviewer-{record.datatype.icon}" size="small" /></f:else>
+								</f:if>
+								&nbsp;
+								[{record.uid}]&nbsp;<span title="{record.title}"><f:format.crop maxCharacters="35" respectWordBoundaries="FALSE">{record.title}</f:format.crop></span>
+								</a>
+							</li>
+						</f:for>
+					</ul>
+				</f:if>
+			</td>
+			<td width="20">&nbsp;</td>
+			<td class="c-wCell" valign="top" width="50%">
+				<div id="pageTree">
+					<h3><f:translate key="LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.detail_page_id" /></h3>
+					{tree->f:format.raw()}
+				</div>
+			</td>
+		</tr>
+	</table>
+
+
+</div>

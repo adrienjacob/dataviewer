@@ -14,6 +14,11 @@ if (!defined("TYPO3_MODE")) {
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addUserTSConfig("mod.web_list.tableDisplayOrder.tx_dataviewer_domain_model_record.before = pages, fe_groups, fe_users, tx_dataviewer_domain_model_datatype");
 
 /***********************************
+ * Manipulating Content
+ ***********************************/
+$TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_content.php']['typolinkLinkHandler']["record"] = \MageDeveloper\Dataviewer\Hooks\LinkHandler::class;
+
+/***********************************
  * Register Cache for the plugins
  ***********************************/
 if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["dataviewer_cache"]))
@@ -24,6 +29,29 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 	$TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["dataviewer_cache"]["options"]["compression"] = 1;
 }
 
+/***********************************
+ * Hook for the RTE to link to
+ * dataviewer records
+ ***********************************/
+if(TYPO3_MODE == "BE") {
+	$TYPO3_CONF_VARS["SC_OPTIONS"]["LinkBrowser"]["hooks"]["dataviewer"] = [
+		"handler" => \MageDeveloper\Dataviewer\RecordList\RecordLinkHandler::class,
+		"before" => [],
+		"after" => [],
+	];
+
+	// register record link handler
+	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig('
+        TCEMAIN.linkHandler {
+            record {
+                handler = MageDeveloper\\Dataviewer\\RecordList\\RecordLinkHandler
+                label = LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:tx_dataviewer
+                displayAfter = page
+                scanAfter = page
+            }
+        }
+    ');
+}
 /***********************************
  * Dataviewer Plugins
  * =================================
@@ -91,7 +119,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
  ***********************************/
 // #1 - Display Records
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Record",
 	["Record" => "index, list, detail, dynamicDetail, part, ajaxRequest, ajaxResponse"], // Cached
 	["Record" => "index, list, ajaxRequest, ajaxResponse"], // UnCached
@@ -101,7 +129,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 
 // #2 - Search Records
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Search",
 	["Search" => "index, search, reset"], // Cached
 	["Search" => "index, search, reset"], // UnCached
@@ -110,7 +138,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 
 // #3 - Letter Selection
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Letter",
 	["Letter" => "index, letter"], // Cached
 	["Letter" => "index, letter"], // UnCached
@@ -119,7 +147,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 
 // #4 - Sorting
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Sort",
 	["Sort" => "index, sort"], // Cached
 	["Sort" => "index, sort"], // UnCached
@@ -128,7 +156,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 
 // #5 - Filtering
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Filter",
 	["Filter" => "index, add, remove, reset"], // Cached
 	["Filter" => "index, add, remove, reset"], // UnCached
@@ -137,7 +165,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 
 // #6 - Selecting
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Select",
 	["Select" => "index, select"], // Cached
 	["Select" => "index, select"], // UnCached
@@ -146,7 +174,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 
 // #7 - Form
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Form",
 	["Form" => "index, post, delete, error"], // Cached
 	["Form" => "index, post, delete, error"], // UnCached
@@ -155,7 +183,7 @@ if (!is_array($TYPO3_CONF_VARS["SYS"]["caching"]["cacheConfigurations"]["datavie
 
 // #8 - Pager
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-	'MageDeveloper.'.$_EXTKEY,
+	"MageDeveloper.".$_EXTKEY,
 	"Pager",
 	["Pager" => "index, page"], // Cached
 	["Pager" => "index, page"], // UnCached

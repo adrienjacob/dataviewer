@@ -2008,6 +2008,11 @@
                 <source>please donate</source>
                 <target>spenden Sie bitte</target>
             </trans-unit>
+            
+            <trans-unit id="linkhandler.info">
+                <source>Please select a record to link. You will then be prompted to select a detail page for the record.</source>
+                <target>Bitte wählen Sie einen Datensatz für die Verlinkung aus. Sie werden anschließend aufgefordert, eine Detailseite für den Datensatz auszuwählen.</target>
+            </trans-unit>
 
 
         </body>
