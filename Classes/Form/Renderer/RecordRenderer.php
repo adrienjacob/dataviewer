@@ -244,11 +244,6 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 
 		} // END FOREACH
 
-         \MageDeveloper\Dataviewer\Utility\DebugUtility::log(__METHOD__ ." ". print_r($requireJsModules, true)."\r\n");
-
-
-        //$this->formResultCompiler->mergeResult(["requireJsModules" => $requireJsModules]);
-
 		// Prepare Tabs
 		foreach($tabConfigurationArray as $i=>$_tabConfigArr)
 		{
@@ -288,26 +283,9 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 
         // Fix for onChange within inline dataviewer records
         // -------------------------------------------------
-        // This.... TODO
-        $inlineJsCode = [];
-        if (!empty($requireJsModules)) {
-            foreach ($requireJsModules as $requireJsModule) {
-                foreach($requireJsModule as $_name=>$_callback) {
-                    // execute the main module, and load a possible callback function
-                    $javaScriptCode = 'require(["' . $_name . '"]';
-                    $inlineCodeKey = "";
-                    if ($_callback !== null) {
-                        $inlineCodeKey .= sha1($_callback);
-                        $javaScriptCode .= ', ' . $_callback;
-                    }
-                    $javaScriptCode .= ');';
-                    $inlineJsCode[] = '/*' . htmlspecialchars('RequireJS-Module-'.$name.$inlineCodeKey) . '*/' . LF . $javaScriptCode . LF;
-                }
-            }
-        }
-
+        // This information is passed to the custom user element,
+        // for merging the information back to the default resultArray
         $userElement->additionalResultArray["requireJsModules"] = $requireJsModules;
-        //$userElement->additionalResultArray['doSaveFieldName'] = "doSave";
 
 		// Finalization
 		$html =
@@ -315,9 +293,6 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 			$this->renderHeader($datatype)						.
 			$this->formResultCompiler->JStop() 					.
 			implode("\r\n", $topParts)							.
-            //"<script type=\"text/javascript\">"                 .
-            //implode(LF, $inlineJsCode)                          .
-            //"</script>"                                         .
 			"<div class=\"dataviewer-content\">"				.
 			$contentHtml 										.
 			$this->renderTabMenu($tabConfigurationArray, "dataviewer-tabs-{$recordUid}")	.
@@ -339,8 +314,6 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 		// Resetting the stored record values for cleaing up the
 		// form on the end
 		$this->recordValueSessionService->resetForRecordId($recordUid);
-
-
 		//$html = "";
 
 		return $html;
