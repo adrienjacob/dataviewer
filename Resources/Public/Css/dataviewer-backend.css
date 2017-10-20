@@ -172,3 +172,5 @@ div.dataviewer-datatypes div.datatype:hover { background-color:#fff; }
 div.dataviewer-datatypes div.datatype a { padding:1em 1em 1em 1em;  }
 div.dataviewer-datatypes div.datatype a:hover { text-decoration: none; }
 div.dataviewer-datatypes div.datatype div.media-body { padding-left:15px; }
+
+div.dataviewer-field fieldset.form-section { padding:0 !important; border:0 !important; }
