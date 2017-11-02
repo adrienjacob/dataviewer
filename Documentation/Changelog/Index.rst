@@ -21,6 +21,9 @@ Changelog
 - [BUGFIX] Multiselect has now 'size' configuration
 - [TASK] Added useful information to the TypoScript/UserFunc
 - [TASK] Signal/Slot in RecordFactory when Creating or Updating Records
+- [TASK] Inline onChange compatibility
+- [TASK] Improved Filter Plugin
+
 
 **1.7.6**
 
