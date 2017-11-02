@@ -55,6 +55,9 @@ class Logo
 	{
 		if($this->backendAccessService->disableDataViewerLogo())
 			return;
+			
+		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == "xmlhttprequest")
+            return;
 	
 		$logoUrl = $this->backendAccessService->getLogoUrl();
 		$supportEmail = $this->backendAccessService->getSupportEmail();
