@@ -32,13 +32,16 @@
 		</div>
 	</f:if>
 	<f:if condition="{filters}">
-		<div class="tx-dataviewer-filters">
-			<f:for each="{filters}" as="filter">
-				<f:if condition="{filter.options -> f:count()} > 0">
-					<f:render partial="Filter/FilterRenderer" arguments="{filter:filter,targetUid:targetUid}" />
-				</f:if>
-			</f:for>
-			<div class="clear"></div>
-		</div>
+		<f:form action="add">
+			<div class="tx-dataviewer-filters">
+				<f:for each="{filters}" as="filter">
+					<f:if condition="{filter.options -> f:count()} > 0">
+						<f:render partial="Filter/FilterRenderer" arguments="{filter:filter,targetUid:targetUid}" />
+					</f:if>
+				</f:for>
+				<div class="clear"></div>
+			</div>
+			<f:form.hidden name="targetUid" value="{targetUid}" />
+		</f:form>
 	</f:if>
 </f:section>
