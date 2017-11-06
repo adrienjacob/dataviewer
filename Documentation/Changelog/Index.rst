@@ -23,6 +23,7 @@ Changelog
 - [TASK] Signal/Slot in RecordFactory when Creating or Updating Records
 - [TASK] Inline onChange compatibility
 - [TASK] Improved Filter Plugin
+- [TASK] Record LinkViewHelper: Added possibility to retrieve only link uri
 
 
 **1.7.6**
