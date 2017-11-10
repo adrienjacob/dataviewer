@@ -700,8 +700,11 @@ class RecordController extends AbstractController
 		// If nothing was set before, we use the per page setting from our records plugin
 		if(is_null($perPage)) $perPage = $this->listSettingsService->getPerPage();
 
-		if($perPage && $selectedPage > 0)
-			$limit = "$page,{$perPage}";
+        if($limit === "0") {
+            $limit = null; // Removing the limit
+        } else if($perPage && $selectedPage > 0) {
+            $limit = "$page,{$perPage}";
+        }
 
 		if(!$this->_hasTargetPlugin("dataviewer_sort") || !$this->sessionServiceContainer->getSortSessionService()->hasOrderings())
 		{
