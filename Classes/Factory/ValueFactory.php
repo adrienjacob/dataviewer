@@ -97,7 +97,10 @@ class ValueFactory implements SingletonInterface
 			return $this->fieldvalues[$type];
 
 		$config		= $this->fieldtypeSettingsService->getFieldtypeConfiguration($type);
-		$valueClass	= $config->getValueClass();
+
+		if($config instanceof \MageDeveloper\Dataviewer\Domain\Model\FieldtypeConfiguration) {
+            $valueClass	= $config->getValueClass();
+        }
 
 		// In case the value class doesn't exist, we fallback to our general value class
 		if(!$this->objectManager->isRegistered($valueClass))
