@@ -2,6 +2,7 @@
 namespace MageDeveloper\Dataviewer\Utility;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -24,6 +25,10 @@ class CheckboxUtility
 	 */
 	public static function getSelectedIds($resultInt, $max = 10)
 	{
+	    if(!MathUtility::canBeInterpretedAsInteger($resultInt)) {
+	        return [];
+        }
+
 		$ret = []; 
 		for($i=0; $i < $max; $i++) 
 		{   
