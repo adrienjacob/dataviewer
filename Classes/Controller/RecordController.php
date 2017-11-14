@@ -685,6 +685,11 @@ class RecordController extends AbstractController
 		// Pager
 		$perPage		= $this->sessionServiceContainer->getPagerSessionService()->getPerPage();
 
+        $sessionIsUsed = false;
+        if($perPage) {
+            $sessionIsUsed = true;
+        }
+
 		// Session has no pager settings, so we take the default setting from the plugin settings
 		if(!$perPage)
 		{
@@ -700,7 +705,7 @@ class RecordController extends AbstractController
 		// If nothing was set before, we use the per page setting from our records plugin
 		if(is_null($perPage)) $perPage = $this->listSettingsService->getPerPage();
 
-        if($limit === "0") {
+        if($limit === "0" && $sessionIsUsed === false) {
             $limit = null; // Removing the limit
         } else if($perPage && $selectedPage > 0) {
             $limit = "$page,{$perPage}";
