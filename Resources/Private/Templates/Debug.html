@@ -1,0 +1,31 @@
+{namespace dataviewer = MageDeveloper\Dataviewer\ViewHelpers}
+
+<style type="text/css">
+    hr { color:#c0c0c0; background-color:#c0c0c0; height:1px; border:0; }
+    .extbase-debugger { margin:20px 0 !important; font-weight: normal !important; }
+    .extbase-debugger em { color:greenyellow; }
+    .extbase-debugger strong { font-weight:600 !important; }
+    .dv-logo { margin-top:20px; }
+</style>
+
+<f:image src="EXT:dataviewer/Resources/Public/Images/logo_dataviewer.svg" alt="MageDeveloper DataViewer" height="50" class="dv-logo" />
+
+<div class="extbase-debugger extbase-debugger-inline">
+    <div class="extbase-debugger-top">DataViewer Information Template</div>
+    <div class="extbase-debugger-center">
+        <span class="extbase-debug-type">You are seeing this, because you didn't select a template in the plugin settings.</span>
+        <br />
+        Templates can either be manually selected by a file or they can be added in TypoScript like this:
+        <br /><br />
+        <pre>
+plugin.tx_dataviewer.templates {
+    General Templates = --div--
+    MyFirstTemplate = fileadmin/templates/dataviewer/Templates/MyFirstTemplate.html
+    ASecondTemplate = EXT:custom/Resources/Private/Templates/Dataviewer/ASecondTemplate.html
+}</pre>
+
+    </div>
+</div>
+
+<f:debug inline="1" title="All Variables">{_all}</f:debug>
+

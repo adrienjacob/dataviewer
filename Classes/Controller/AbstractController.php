@@ -587,6 +587,6 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 		if ($this->pluginSettingsService->hasTemplate() && !$this->pluginSettingsService->isDebug())
 			return $this->pluginSettingsService->getTemplate();
 
-		return;
+		return "EXT:dataviewer/Resources/Private/Templates/Debug.html";
 	}
 }
