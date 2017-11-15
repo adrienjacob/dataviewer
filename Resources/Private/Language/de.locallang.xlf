@@ -1289,6 +1289,10 @@
                 <source>Selected Record</source>
                 <target>Ausgewählter Datensatz</target>
             </trans-unit>
+            <trans-unit id="nothing_selected">
+                <source>Nothing selected</source>
+                <target>Keine Auswahl</target>
+            </trans-unit>
             <trans-unit id="selected_field">
                 <source>Selected Field</source>
                 <target>Ausgewähltes Feld</target>
@@ -2030,6 +2034,10 @@
             <trans-unit id="ajax.loading">
                 <source>Loading ...</source>
                 <target>Wird geladen ...</target>
+            </trans-unit>
+            <trans-unit id="linkhandler.info">
+                <source>Please first select a record. After selecting a record, you can select the target page for the detail view.</source>
+                <target>Bitte wählen Sie zuerst einen Datensatz aus. Nach der Auswahl können Sie die Zielseite für die Detailansicht wählen.</target>
             </trans-unit>
 
         </body>

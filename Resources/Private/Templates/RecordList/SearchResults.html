@@ -1,0 +1,26 @@
+{namespace core=TYPO3\CMS\Core\ViewHelpers}
+{namespace dv=MageDeveloper\Dataviewer\ViewHelpers}
+{namespace be=TYPO3\CMS\Beuser\ViewHelpers}
+
+<f:if condition="{records->f:count()} > 0">
+    <f:then>
+        <ul class="recordList">
+            <f:for each="{records}" as="record" iteration="j">
+                <li class="record" data-recordid="{record.uid}">
+                    <a href="{url}&record={record.uid}#selected_record" class="t3js-recordLink" data-id="{record.uid}">
+                    <f:if condition="{record.hidden}">
+                        <f:then><core:icon identifier="extensions-dataviewer-{record.datatype.icon}" size="small" overlay="overlay-hidden" /></f:then>
+                        <f:else><core:icon identifier="extensions-dataviewer-{record.datatype.icon}" size="small" /></f:else>
+                    </f:if>
+                    &nbsp;
+                    [{record.uid}]&nbsp;<span title="{record.title}"><f:format.crop maxCharacters="35" respectWordBoundaries="FALSE">{record.title}</f:format.crop></span>
+                    </a>
+                </li>
+            </f:for>
+        </ul>
+    </f:then>
+    <f:else>
+		<em><f:translate key="LLL:EXT:lang/Resources/Private/Language/locallang_misc.xlf:liveSearch_listEmptyText" /></em>
+    </f:else>
+</f:if>
+

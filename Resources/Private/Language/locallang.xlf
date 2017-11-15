@@ -970,6 +970,9 @@
             <trans-unit id="selected_record">
                 <source>Selected Record</source>
             </trans-unit>
+            <trans-unit id="nothing_selected">
+                <source>Nothing selected</source>
+            </trans-unit>
             <trans-unit id="selected_datatype">
                 <source>Selected Datatype</source>
             </trans-unit>
@@ -1534,7 +1537,9 @@
             <trans-unit id="ajax.loading">
                 <source>Loading ...</source>
             </trans-unit>
-
+            <trans-unit id="linkhandler.info">
+                <source>Please first select a record. After selecting a record, you can select the target page for the detail view.</source>
+            </trans-unit>
 
         </body>
 
