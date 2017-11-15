@@ -245,6 +245,15 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProc
  */
 $GLOBALS['TYPO3_CONF_VARS']['BE']['toolbarItems'][] = 'MageDeveloper\\Dataviewer\\Hooks\\ToolbarItem';
 
+/***********************************
+ * Custom User Element for
+ * Manipulating Inline Outputs
+ ***********************************/
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry']["user"] = [
+    "nodeName" => "user",
+    "priority" => "1",
+    "class" => "MageDeveloper\\Dataviewer\\Form\\Element\\UserElement",
+];
 
 /***********************************
  * RealUrl Configuration
