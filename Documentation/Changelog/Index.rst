@@ -33,6 +33,9 @@ Changelog
 - [TASK] Sorting by manual record selection
 - [TASK] Translation for 'Show all' in Pager
 - [TASK] Some DataViewer-Icons are now delivered as SVG
+- [FEATURE] Linking Records directly in RTE
+- [FEATURE] Custom Buttons of Datatypes in DocHeaderButtons
+- [FEATURE] Enhanced Filter Plugin
 
 **2.0.2**
 
