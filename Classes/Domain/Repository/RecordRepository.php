@@ -327,10 +327,6 @@ class RecordRepository extends AbstractRepository
 		$dataMapper = GeneralUtility::makeInstance(DataMapper::class);
 		$mapped = $dataMapper->map(Record::class, $result);
 		
-		
-		foreach($mapped as $_m)
-			echo $_m->getUid()."<br />";
-		
 		return $mapped;
 	}
 

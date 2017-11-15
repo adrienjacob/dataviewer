@@ -154,8 +154,8 @@ class Field extends AbstractDataHandler implements DataHandlerInterface
         $field->setFrontendLabel($name);
         
         // Assign generated code to the field
-        $code = $field->getCode();
-        $field->setVariableName($code);
+        //$code = $field->getCode();
+        //$field->setVariableName($code);
         $this->fieldRepository->update($field);
         
 		

@@ -290,7 +290,7 @@ class RecordController extends AbstractController
 		}
 
 		// Override by datatype template setting
-		if ($record->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
+		if ($record instanceof Record && $record->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
 			$view->setTemplatePathAndFilename($record->getDatatype()->getTemplatefile());
 
 		// Assigning the record to the view	
@@ -392,7 +392,7 @@ class RecordController extends AbstractController
 		}
 
 		// Override by datatype template setting
-		if ($recordObj->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
+		if ($recordObj instanceof Record && $recordObj->getDatatype()->getTemplatefile() && !$this->listSettingsService->isDebug())
 			$view->setTemplatePathAndFilename($recordObj->getDatatype()->getTemplatefile());
 
 		////////////////////////////////////////////////////
@@ -421,7 +421,7 @@ class RecordController extends AbstractController
 			$this->pluginCacheService->setValidRecordIds($cacheIdentifier, $ids);
 		}
 
-		if (!in_array($record, $ids) && $this->listSettingsService->getRecordSelectionType())
+		if ($record > 0 && !in_array($record, $ids) && $this->listSettingsService->getRecordSelectionType())
 			return;
 
 		// Get selected records and check if the record is allowed
@@ -683,8 +683,11 @@ class RecordController extends AbstractController
 		// If nothing was set before, we use the per page setting from our records plugin
 		if(is_null($perPage)) $perPage = $this->listSettingsService->getPerPage();
 
-		if($perPage && $selectedPage > 0)
-			$limit = "$page,{$perPage}";
+		if($limit === "0") {
+		    $limit = null; // Removing the limit
+        } else if($perPage && $selectedPage > 0) {
+            $limit = "$page,{$perPage}";
+        }
 
 		if(!$this->_hasTargetPlugin("dataviewer_sort") || !$this->sessionServiceContainer->getSortSessionService()->hasOrderings())
 		{

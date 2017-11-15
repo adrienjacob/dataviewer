@@ -28,494 +28,494 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class Record extends AbstractDataHandler implements DataHandlerInterface
 {
-	/**
-	 * RecordValue Session Service
-	 *
-	 * @var \MageDeveloper\Dataviewer\Service\Session\RecordValueSessionService
-	 * @inject
-	 */
-	protected $recordValueSessionService;
-
-	/**
-	 * Field Validation
-	 *
-	 * @var \MageDeveloper\Dataviewer\Validation\FieldValidation
-	 * @inject
-	 */
-	protected $fieldValidation;
-
-	/**
-	 * Datatype Repository
-	 *
-	 * @var \MageDeveloper\Dataviewer\Domain\Repository\DatatypeRepository
-	 * @inject
-	 */
-	protected $datatypeRepository;
-
-	/**
-	 * Record Repository
-	 *
-	 * @var \MageDeveloper\Dataviewer\Domain\Repository\RecordRepository
-	 * @inject
-	 */
-	protected $recordRepository;
-
-	/**
-	 * Record Value Repository
-	 *
-	 * @var \MageDeveloper\Dataviewer\Domain\Repository\RecordValueRepository
-	 * @inject
-	 */
-	protected $recordValueRepository;
-
-	/**
-	 * Field Repository
-	 *
-	 * @var \MageDeveloper\Dataviewer\Domain\Repository\FieldRepository
-	 * @inject
-	 */
-	protected $fieldRepository;
-
-	/**
-	 * @var array
-	 */
-	protected $tempColumns = [];
-
-	/**
-	 * Id of the main record
-	 *
-	 * @var int
-	 */
-	protected $mainRecordUid = 0;
-
-	/**
-	 * Current Language Uid
-	 * 
-	 * @var int
-	 */
-	protected $languageUid;
-
-	/**
-	 * Constructor
-	 *
-	 * @return Record
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-		$this->fieldValueSessionService = $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Session\FieldValueSessionService::class);
-		$this->recordRepository			= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordRepository::class);
-		$this->recordValueRepository	= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordValueRepository::class);
-		$this->fieldRepository			= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\FieldRepository::class);
-		$this->fieldValidation			= $this->objectManager->get(\MageDeveloper\Dataviewer\Validation\FieldValidation::class);
-
-		/*
-		$backend = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\BackendInterface::class);
-		//$dataMapRecord = $backend->getDataMapper()->getDataMap("MageDeveloper\\Dataviewer\\Domain\\Model\\Record");
-		//$dataMapRecord->setTableName("tx_dataviewer_domain_model_record_external");
-		$dataMapRecordValue = $backend->getDataMapper()->getDataMap("MageDeveloper\\Dataviewer\\Domain\\Model\\RecordValue");
-		$dataMapRecordValue->setTableName("tx_dataviewer_domain_model_recordvalue_external");
-		*/
-	}
-
-	/**
-	 * Get an record by a given id
-	 *
-	 * @param int $id
-	 * @return RecordModel|bool
-	 */
-	public function getRecordById($id)
-	{
-		if($id <= 0) return false;
-
-		/* @var RecordModel $record */
-		$record = $this->recordRepository->findByUid($id, false);
-
-		if ($record instanceof RecordModel)
-			return $record;
-
-		return false;
-	}
-
-	/**
-	 * Get an datatype by a given id
-	 *
-	 * @param int $id
-	 * @return DatatypeModel|bool
-	 */
-	public function getDatatypeById($id)
-	{
-		if($id <= 0) return false;
-
-		/* @var DatatypeModel $record */
-		$datatype = $this->datatypeRepository->findByUid($id, false);
-
-		if ($datatype instanceof DatatypeModel)
-			return $datatype;
-
-		return false;
-	}
-
-	/**
-	 * Get an recordValue by a given id
-	 *
-	 * @param int $id
-	 * @return RecordValueModel|bool
-	 */
-	public function getRecordValueById($id)
-	{
-		/* @var RecordValueModel $record */
-		$recordValue = $this->recordValueRepository->findByUid($id, false);
-
-		if ($recordValue instanceof RecordValueModel && $recordValue->getUid() == $id)
-			return $recordValue;
-
-		return false;
-	}
-
-	/**
-	 * Get an field by a given id
-	 *
-	 * @param int $id
-	 * @return Field|bool
-	 */
-	public function getFieldById($id)
-	{
-		/* @var FieldModel $field */
-		$field = $this->fieldRepository->findByUidX($id, false);
-
-		if ($field instanceof FieldModel && $field->getUid() == $id)
-			return $field;
-
-		return false;
-	}
-
-	/**
-	 * processCmdmap
-	 *
-	 * @param string $command
-	 * @param string $table
-	 * @param mixed $value
-	 * @param bool $commandIsProcessed
-	 * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
-	 * @param bool $pasteUpdate
-	 * @return void
-	 */
-	public function processCmdmap($command, $table, $id, $value, &$commandIsProcessed, $parentObj, $pasteUpdate)
-	{
-		if ($table != "tx_dataviewer_domain_model_record") return;
-
-		if ($command == "copy")
-		{
-			/* @var RecordModel $parentRecord */
-			/* @var RecordModel $newRecord */
-			$parentRecord = $this->getRecordById($id);
-			$newRecordId = $parentObj->copyRecord($table, $id, $value, false, [], "record_values");
-			$newRecord = $this->getRecordById($newRecordId);
-			$pid = $newRecord->getPid();
-
-			// Original Record Values that need to be copied
-			$recordValues = $parentRecord->getRecordValues();
-
-			foreach($recordValues as $_recordValue)
-			{
-				/* @var RecordValueModel $_recordValue */
-				/* @var RecordValueModel $newRecordValue */
-				$newRecordValueId = $parentObj->copyRecord("tx_dataviewer_domain_model_recordvalue", $_recordValue->getUid(), $pid, false, [], "field,field_value");
-				$newRecordValue = $this->getRecordValueById($newRecordValueId, false);
-
-				if ($newRecordValue && $_recordValue->getField())
-				{
-					$newRecordValue->setRecord($newRecord);
-					$newRecordValue->setField($_recordValue->getField());
-					$newRecordValue->setPid($pid);
-
-					// We need to check the fieldtype to do certain copy behaviours here
-					switch ($_recordValue->getField()->getType())
-					{
-						case "relation":
-							/****************************************************************
-							 * File Relation
-							 * -------------------------------------------------------------
-							 * We need to copy the file and create a new file relation here
-							 * so everything can be kept for the new standalone record
-							 ****************************************************************/
-
-							/* @var \TYPO3\CMS\Core\Resource\FileRepository $fileRepository */
-							$fileRepository = $this->objectManager->get(\TYPO3\CMS\Core\Resource\FileRepository::class);
-							$relationFileId = $_recordValue->getValueContent();
-
-							if($relationFileId > 0)
-							{
-								/* @var \TYPO3\CMS\Core\Resource\FileReference $fileReference */
-								$fileReference = $fileRepository->findFileReferenceByUid($relationFileId);
-
-								$folder = $fileReference->getParentFolder();
-								$copiedFile = $fileReference->getOriginalFile()->copyTo($folder);
-
-								$newId = "NEW1234";
-								$data = [];
-								$data["sys_file_reference"][$newId] = array(
-									"table_local" 	=> "sys_file",
-									"uid_local" 	=> $copiedFile->getUid(),
-									"tablenames" 	=> "tx_dataviewer_domain_model_record",
-									"uid_foreign" 	=> $newRecord->getUid(),
-									"fieldname" 	=> $_recordValue->getField()->getUid(),
-									"pid" 			=> $newRecord->getPid(),
-								);
-								$data["tx_dataviewer_domain_model_record"][$newRecord->getUid()] = [
-									"tx_dataviewer_domain_model_record" => $newId,
-								];
-
-								$parentObj->start($data, []);
-								$parentObj->process_datamap();
-							}
-
-							break;
-						case "inline":
-							/****************************************************************
-							 * Regular Inline Elements
-							 * -------------------------------------------------------------
-							 * We need to copy all elements here and assign the copied to the
-							 * new value
-							 ****************************************************************/
-							$ids = GeneralUtility::trimExplode(",", $newRecordValue->getValueContent());
-
-							// Clearing the value content
-							$newRecordValue->setValueContent("");
-
-							$field = $newRecordValue->getField();
-							$table = $field->getConfig("foreign_table");
-							$destPid = ($field->getConfig("pid_config") > 0)?$field->getConfig("pid_config"):$pid;
-							$exclude = "";
-
-							$newIds = [];
-							foreach($ids as $_id)
-							{
-								$_newId = $parentObj->copyRecord($table, $_id, $destPid, false, [], $exclude);
-								if($_newId) $newIds[] = $_newId;
-							}
-
-							$newRecordValue->setValueContent(implode(",", $newIds));
-
-							break;
-						case "datatype":
-							/****************************************************************
-							 * Datatype Inline Elements
-							 * -------------------------------------------------------------
-							 * We need to copy all elements here and assign the copied to the
-							 * new value
-							 ****************************************************************/
-							$ids = GeneralUtility::trimExplode(",", $newRecordValue->getValueContent());
-
-							// Clearing the value content
-							$newRecordValue->setValueContent("");
-
-							$field = $newRecordValue->getField();
-							$table = "tx_dataviewer_domain_model_record";
-							$destPid = ($field->getConfig("pid_config") > 0)?$field->getConfig("pid_config"):$pid;
-							$exclude = "record_values";
-
-							$newIds = [];
-							foreach($ids as $_id)
-							{
-								$_newId = $parentObj->copyRecord($table, $_id, $destPid, false, [], $exclude);
-								if($_newId) $newIds[] = $_newId;
-							}
-
-							$newRecordValue->setValueContent(implode(",", $newIds));
-
-							break;
-						default:
-							break;
-
-					}
-
-					$this->recordValueRepository->update($newRecordValue);
-				}
-			}
-
-			// persisting the copy
-			$this->persistenceManager->persistAll();
-
-			$commandIsProcessed = false;
-			// Do the normal action after this
-		}
-
-	}
-
-	/**
-	 * @param string $table
-	 * @param int $id
-	 * @param array $recordToDelete
-	 * @param bool $recordWasDeleted
-	 * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
-	 */
-	public function processCmdmap_deleteAction($table, $id, $recordToDelete, &$recordWasDeleted, &$parentObj)
-	{
-		if ($table != "tx_dataviewer_domain_model_record") return;
-		
-		// Determine the language
-		$languageField = Config::getRecordsLanguageField();
-		$languageUid = $recordToDelete[$languageField];
-		$this->recordRepository->setLanguageUid($languageUid);
-		$this->_removeRecordValuesByRecordId($id, $languageUid);
-
-		// Deleting the main record
-		// The record is possibly not existing here
-		$record = $this->getRecordById($id);
-
-		if($record)
-		{
-			$record->setDeleted(true);
-			$this->recordRepository->update($record);
-		}
-
-		$this->persistenceManager->persistAll();
-
-		// Hook
-		$recordWasDeleted = true;
-
-		$message = Locale::translate("record_was_successfully_deleted", $id);
-		$this->addBackendFlashMessage($message, '', FlashMessage::OK);
-	}
-
-	/**
-	 * Prevent saving of a news record if the editor doesn't have access to all categories of the news record
-	 *
-	 * @param array $incomingFieldArray
-	 * @param string $table
-	 * @param int $id
-	 * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
-	 * @return bool
-	 */
-	public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, &$parentObj)
-	{
-		if ($table != "tx_dataviewer_domain_model_record") return;
-		
-		if(!$this->mainRecordUid)
-			$this->mainRecordUid = $id;
-			
-		if(!$this->languageUid)
-		{
-			$languageField = Config::getRecordsLanguageField();
-			$this->languageUid = $incomingFieldArray[$languageField];
-		}	
-		
-		// Storing the fieldArray to the session to prefill form values for easier modifying
-		$this->recordValueSessionService->store($id, $incomingFieldArray);
-
-		$record = $this->getRecordById($id);
-
-		$datatype = null;
-		if ($record)
-			$datatype = $record->getDatatype();
-
-		if(!$datatype)
-			$datatype = $this->getDatatypeById($incomingFieldArray["datatype"]);
-
-		if(!$datatype)
-			return;
-
-		$datatypeId = $datatype->getUid();
-		if(GeneralUtility::_POST()["datatype"]) {
-			// This is for the single datatype selection on creating a new
-			// record in the New-Record-Assistant of TYPO3
-			$datatypeId = (int)GeneralUtility::_POST("datatype");
-			$this->_redirectCurrentUrl(["datatype" => $datatypeId]);
-		}
-
-		$validationErrors = [];
-
-		// Validate the POST data
-		$validationErrors = $this->validateFieldArray($incomingFieldArray, $datatype);
-
-		if (!empty($validationErrors))
-		{
-			// Record save data is invalid. We showed the messages before, now we need to reload the
-			// form with the entered data
-			foreach($validationErrors as $field=>$_errors)
-				foreach($_errors as $_error)
-					$this->addBackendFlashMessage($_error, $field);
-
-			$incomingFieldArray["icon"] = $datatype->getIcon();
-			$incomingFieldArray["hidden"] = true;
-
-			// Storing the fieldArray to the session to prefill form values for easier modifying
-			//$this->recordValueSessionService->store("NEW", $incomingFieldArray);
-			$this->_redirectCurrentUrl(["datatype" => $datatypeId]);
-			return;
-		}
-
-		// Records save data is stored for later usage to
-		// correctly store NEW<hash>-Records
-		$this->saveData[$id] = [
-			$incomingFieldArray,
-		];
-
-		// We need to remove all elements from the array where the key is an integer,
-		// so we can remove our custom fields in order to let the save procedure
-		// in combination with the added GLOBALS (for the suggest wizard) removed
-		foreach($incomingFieldArray as $_k=>$_v)
-			if(is_numeric($_k))
-				unset($incomingFieldArray[$_k]);
-
-	}
-
-	/**
-	 * @param string $status
-	 * @param string $table
-	 * @param int $id
-	 * @param array $fieldArray
-	 * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
-	 */
-	public function processDatamap_postProcessFieldArray($status, $table, $id, $fieldArray, &$parentObj)
-	{
-		if ($table != "tx_dataviewer_domain_model_record") return;
-		
-		// We need to clear the GLOBALS before database operations because we've injected
-		// a lot of TCA for our needs into them
-		// This is for saving compatibility and removes the 'mess' we've created!
-
-		$columns = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
-
-		foreach($columns as $_id=>$_column)
-			if(is_numeric($_id))
-			{
-				$this->tempColumns[$_id] = $_column;
-				unset($GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"][$_id]);
-			}
-	}
-
-	/**
-	 * @param string $status
-	 * @param string $table
-	 * @param int $id
-	 * @param array $fieldArray
-	 * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
-	 */
-	public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, &$parentObj)
-	{
-		// Assign substNEWIds for later usage if the element is in our target
-		$this->substNEWwithIDs = array_merge($this->substNEWwithIDs, $parentObj->substNEWwithIDs);
-		
-		$this->_substituteRecordValues();
-		
-		if ($table != "tx_dataviewer_domain_model_record") return;
-		
-		// Disable Versioning
-		//$parentObj->bypassWorkspaceRestrictions = true;
-		//$parentObj->updateModeL10NdiffDataClear = true;
-		//$parentObj->updateModeL10NdiffData = false;
-		
-		// Substitute the NEW to Id on all record values and maybe in this array
-		// We need to transform the saved values (NEW<hash>) to already saved ids)
-		$this->_substituteRecordValues();
-
-		$globals = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
-		$GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"] = array_replace($globals, $this->tempColumns);
-
-		if (isset($this->saveData[$id]) && is_array($this->saveData[$id])) {
+    /**
+     * RecordValue Session Service
+     *
+     * @var \MageDeveloper\Dataviewer\Service\Session\RecordValueSessionService
+     * @inject
+     */
+    protected $recordValueSessionService;
+
+    /**
+     * Field Validation
+     *
+     * @var \MageDeveloper\Dataviewer\Validation\FieldValidation
+     * @inject
+     */
+    protected $fieldValidation;
+
+    /**
+     * Datatype Repository
+     *
+     * @var \MageDeveloper\Dataviewer\Domain\Repository\DatatypeRepository
+     * @inject
+     */
+    protected $datatypeRepository;
+
+    /**
+     * Record Repository
+     *
+     * @var \MageDeveloper\Dataviewer\Domain\Repository\RecordRepository
+     * @inject
+     */
+    protected $recordRepository;
+
+    /**
+     * Record Value Repository
+     *
+     * @var \MageDeveloper\Dataviewer\Domain\Repository\RecordValueRepository
+     * @inject
+     */
+    protected $recordValueRepository;
+
+    /**
+     * Field Repository
+     *
+     * @var \MageDeveloper\Dataviewer\Domain\Repository\FieldRepository
+     * @inject
+     */
+    protected $fieldRepository;
+
+    /**
+     * @var array
+     */
+    protected $tempColumns = [];
+
+    /**
+     * Id of the main record
+     *
+     * @var int
+     */
+    protected $mainRecordUid = 0;
+
+    /**
+     * Current Language Uid
+     *
+     * @var int
+     */
+    protected $languageUid;
+
+    /**
+     * Constructor
+     *
+     * @return Record
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->fieldValueSessionService = $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Session\FieldValueSessionService::class);
+        $this->recordRepository			= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordRepository::class);
+        $this->recordValueRepository	= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordValueRepository::class);
+        $this->fieldRepository			= $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\FieldRepository::class);
+        $this->fieldValidation			= $this->objectManager->get(\MageDeveloper\Dataviewer\Validation\FieldValidation::class);
+
+        /*
+        $backend = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\BackendInterface::class);
+        //$dataMapRecord = $backend->getDataMapper()->getDataMap("MageDeveloper\\Dataviewer\\Domain\\Model\\Record");
+        //$dataMapRecord->setTableName("tx_dataviewer_domain_model_record_external");
+        $dataMapRecordValue = $backend->getDataMapper()->getDataMap("MageDeveloper\\Dataviewer\\Domain\\Model\\RecordValue");
+        $dataMapRecordValue->setTableName("tx_dataviewer_domain_model_recordvalue_external");
+        */
+    }
+
+    /**
+     * Get an record by a given id
+     *
+     * @param int $id
+     * @return RecordModel|bool
+     */
+    public function getRecordById($id)
+    {
+        if($id <= 0) return false;
+
+        /* @var RecordModel $record */
+        $record = $this->recordRepository->findByUid($id, false);
+
+        if ($record instanceof RecordModel)
+            return $record;
+
+        return false;
+    }
+
+    /**
+     * Get an datatype by a given id
+     *
+     * @param int $id
+     * @return DatatypeModel|bool
+     */
+    public function getDatatypeById($id)
+    {
+        if($id <= 0) return false;
+
+        /* @var DatatypeModel $record */
+        $datatype = $this->datatypeRepository->findByUid($id, false);
+
+        if ($datatype instanceof DatatypeModel)
+            return $datatype;
+
+        return false;
+    }
+
+    /**
+     * Get an recordValue by a given id
+     *
+     * @param int $id
+     * @return RecordValueModel|bool
+     */
+    public function getRecordValueById($id)
+    {
+        /* @var RecordValueModel $record */
+        $recordValue = $this->recordValueRepository->findByUid($id, false);
+
+        if ($recordValue instanceof RecordValueModel && $recordValue->getUid() == $id)
+            return $recordValue;
+
+        return false;
+    }
+
+    /**
+     * Get an field by a given id
+     *
+     * @param int $id
+     * @return Field|bool
+     */
+    public function getFieldById($id)
+    {
+        /* @var FieldModel $field */
+        $field = $this->fieldRepository->findByUidX($id, false);
+
+        if ($field instanceof FieldModel && $field->getUid() == $id)
+            return $field;
+
+        return false;
+    }
+
+    /**
+     * processCmdmap
+     *
+     * @param string $command
+     * @param string $table
+     * @param mixed $value
+     * @param bool $commandIsProcessed
+     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
+     * @param bool $pasteUpdate
+     * @return void
+     */
+    public function processCmdmap($command, $table, $id, $value, &$commandIsProcessed, $parentObj, $pasteUpdate)
+    {
+        if ($table != "tx_dataviewer_domain_model_record") return;
+
+        if ($command == "copy")
+        {
+            /* @var RecordModel $parentRecord */
+            /* @var RecordModel $newRecord */
+            $parentRecord = $this->getRecordById($id);
+            $newRecordId = $parentObj->copyRecord($table, $id, $value, false, [], "record_values");
+            $newRecord = $this->getRecordById($newRecordId);
+            $pid = $newRecord->getPid();
+
+            // Original Record Values that need to be copied
+            $recordValues = $parentRecord->getRecordValues();
+
+            foreach($recordValues as $_recordValue)
+            {
+                /* @var RecordValueModel $_recordValue */
+                /* @var RecordValueModel $newRecordValue */
+                $newRecordValueId = $parentObj->copyRecord("tx_dataviewer_domain_model_recordvalue", $_recordValue->getUid(), $pid, false, [], "field,field_value");
+                $newRecordValue = $this->getRecordValueById($newRecordValueId, false);
+
+                if ($newRecordValue && $_recordValue->getField())
+                {
+                    $newRecordValue->setRecord($newRecord);
+                    $newRecordValue->setField($_recordValue->getField());
+                    $newRecordValue->setPid($pid);
+
+                    // We need to check the fieldtype to do certain copy behaviours here
+                    switch ($_recordValue->getField()->getType())
+                    {
+                        case "relation":
+                            /****************************************************************
+                             * File Relation
+                             * -------------------------------------------------------------
+                             * We need to copy the file and create a new file relation here
+                             * so everything can be kept for the new standalone record
+                             ****************************************************************/
+
+                            /* @var \TYPO3\CMS\Core\Resource\FileRepository $fileRepository */
+                            $fileRepository = $this->objectManager->get(\TYPO3\CMS\Core\Resource\FileRepository::class);
+                            $relationFileId = $_recordValue->getValueContent();
+
+                            if($relationFileId > 0)
+                            {
+                                /* @var \TYPO3\CMS\Core\Resource\FileReference $fileReference */
+                                $fileReference = $fileRepository->findFileReferenceByUid($relationFileId);
+
+                                $folder = $fileReference->getParentFolder();
+                                $copiedFile = $fileReference->getOriginalFile()->copyTo($folder);
+
+                                $newId = "NEW1234";
+                                $data = [];
+                                $data["sys_file_reference"][$newId] = array(
+                                    "table_local" 	=> "sys_file",
+                                    "uid_local" 	=> $copiedFile->getUid(),
+                                    "tablenames" 	=> "tx_dataviewer_domain_model_record",
+                                    "uid_foreign" 	=> $newRecord->getUid(),
+                                    "fieldname" 	=> $_recordValue->getField()->getUid(),
+                                    "pid" 			=> $newRecord->getPid(),
+                                );
+                                $data["tx_dataviewer_domain_model_record"][$newRecord->getUid()] = [
+                                    "tx_dataviewer_domain_model_record" => $newId,
+                                ];
+
+                                $parentObj->start($data, []);
+                                $parentObj->process_datamap();
+                            }
+
+                            break;
+                        case "inline":
+                            /****************************************************************
+                             * Regular Inline Elements
+                             * -------------------------------------------------------------
+                             * We need to copy all elements here and assign the copied to the
+                             * new value
+                             ****************************************************************/
+                            $ids = GeneralUtility::trimExplode(",", $newRecordValue->getValueContent());
+
+                            // Clearing the value content
+                            $newRecordValue->setValueContent("");
+
+                            $field = $newRecordValue->getField();
+                            $table = $field->getConfig("foreign_table");
+                            $destPid = ($field->getConfig("pid_config") > 0)?$field->getConfig("pid_config"):$pid;
+                            $exclude = "";
+
+                            $newIds = [];
+                            foreach($ids as $_id)
+                            {
+                                $_newId = $parentObj->copyRecord($table, $_id, $destPid, false, [], $exclude);
+                                if($_newId) $newIds[] = $_newId;
+                            }
+
+                            $newRecordValue->setValueContent(implode(",", $newIds));
+
+                            break;
+                        case "datatype":
+                            /****************************************************************
+                             * Datatype Inline Elements
+                             * -------------------------------------------------------------
+                             * We need to copy all elements here and assign the copied to the
+                             * new value
+                             ****************************************************************/
+                            $ids = GeneralUtility::trimExplode(",", $newRecordValue->getValueContent());
+
+                            // Clearing the value content
+                            $newRecordValue->setValueContent("");
+
+                            $field = $newRecordValue->getField();
+                            $table = "tx_dataviewer_domain_model_record";
+                            $destPid = ($field->getConfig("pid_config") > 0)?$field->getConfig("pid_config"):$pid;
+                            $exclude = "record_values";
+
+                            $newIds = [];
+                            foreach($ids as $_id)
+                            {
+                                $_newId = $parentObj->copyRecord($table, $_id, $destPid, false, [], $exclude);
+                                if($_newId) $newIds[] = $_newId;
+                            }
+
+                            $newRecordValue->setValueContent(implode(",", $newIds));
+
+                            break;
+                        default:
+                            break;
+
+                    }
+
+                    $this->recordValueRepository->update($newRecordValue);
+                }
+            }
+
+            // persisting the copy
+            $this->persistenceManager->persistAll();
+
+            $commandIsProcessed = false;
+            // Do the normal action after this
+        }
+
+    }
+
+    /**
+     * @param string $table
+     * @param int $id
+     * @param array $recordToDelete
+     * @param bool $recordWasDeleted
+     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
+     */
+    public function processCmdmap_deleteAction($table, $id, $recordToDelete, &$recordWasDeleted, &$parentObj)
+    {
+        if ($table != "tx_dataviewer_domain_model_record") return;
+
+        // Determine the language
+        $languageField = Config::getRecordsLanguageField();
+        $languageUid = $recordToDelete[$languageField];
+        $this->recordRepository->setLanguageUid($languageUid);
+        $this->_removeRecordValuesByRecordId($id, $languageUid);
+
+        // Deleting the main record
+        // The record is possibly not existing here
+        $record = $this->getRecordById($id);
+
+        if($record)
+        {
+            $record->setDeleted(true);
+            $this->recordRepository->update($record);
+        }
+
+        $this->persistenceManager->persistAll();
+
+        // Hook
+        $recordWasDeleted = true;
+
+        $message = Locale::translate("record_was_successfully_deleted", $id);
+        $this->addBackendFlashMessage($message, '', FlashMessage::OK);
+    }
+
+    /**
+     * Prevent saving of a news record if the editor doesn't have access to all categories of the news record
+     *
+     * @param array $incomingFieldArray
+     * @param string $table
+     * @param int $id
+     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
+     * @return bool
+     */
+    public function processDatamap_preProcessFieldArray(&$incomingFieldArray, $table, $id, &$parentObj)
+    {
+        if ($table != "tx_dataviewer_domain_model_record") return;
+
+        if(!$this->mainRecordUid)
+            $this->mainRecordUid = $id;
+
+        if(!$this->languageUid)
+        {
+            $languageField = Config::getRecordsLanguageField();
+            $this->languageUid = $incomingFieldArray[$languageField];
+        }
+
+        // Storing the fieldArray to the session to prefill form values for easier modifying
+        $this->recordValueSessionService->store($id, $incomingFieldArray);
+
+        $record = $this->getRecordById($id);
+
+        $datatype = null;
+        if ($record)
+            $datatype = $record->getDatatype();
+
+        if(!$datatype)
+            $datatype = $this->getDatatypeById($incomingFieldArray["datatype"]);
+
+        if(!$datatype)
+            return;
+
+        $datatypeId = $datatype->getUid();
+        if(GeneralUtility::_POST()["datatype"]) {
+            // This is for the single datatype selection on creating a new
+            // record in the New-Record-Assistant of TYPO3
+            $datatypeId = (int)GeneralUtility::_POST("datatype");
+            $this->_redirectCurrentUrl(["datatype" => $datatypeId]);
+        }
+
+        $validationErrors = [];
+
+        // Validate the POST data
+        $validationErrors = $this->validateFieldArray($incomingFieldArray, $datatype);
+
+        if (!empty($validationErrors))
+        {
+            // Record save data is invalid. We showed the messages before, now we need to reload the
+            // form with the entered data
+            foreach($validationErrors as $field=>$_errors)
+                foreach($_errors as $_error)
+                    $this->addBackendFlashMessage($_error, $field);
+
+            $incomingFieldArray["icon"] = $datatype->getIcon();
+            $incomingFieldArray["hidden"] = true;
+
+            // Storing the fieldArray to the session to prefill form values for easier modifying
+            //$this->recordValueSessionService->store("NEW", $incomingFieldArray);
+            $this->_redirectCurrentUrl(["datatype" => $datatypeId]);
+            return;
+        }
+
+        // Records save data is stored for later usage to
+        // correctly store NEW<hash>-Records
+        $this->saveData[$id] = [
+            $incomingFieldArray,
+        ];
+
+        // We need to remove all elements from the array where the key is an integer,
+        // so we can remove our custom fields in order to let the save procedure
+        // in combination with the added GLOBALS (for the suggest wizard) removed
+        foreach($incomingFieldArray as $_k=>$_v)
+            if(is_numeric($_k))
+                unset($incomingFieldArray[$_k]);
+
+    }
+
+    /**
+     * @param string $status
+     * @param string $table
+     * @param int $id
+     * @param array $fieldArray
+     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
+     */
+    public function processDatamap_postProcessFieldArray($status, $table, $id, $fieldArray, &$parentObj)
+    {
+        if ($table != "tx_dataviewer_domain_model_record") return;
+
+        // We need to clear the GLOBALS before database operations because we've injected
+        // a lot of TCA for our needs into them
+        // This is for saving compatibility and removes the 'mess' we've created!
+
+        $columns = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
+
+        foreach($columns as $_id=>$_column)
+            if(is_numeric($_id))
+            {
+                $this->tempColumns[$_id] = $_column;
+                unset($GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"][$_id]);
+            }
+    }
+
+    /**
+     * @param string $status
+     * @param string $table
+     * @param int $id
+     * @param array $fieldArray
+     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
+     */
+    public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, &$parentObj)
+    {
+        // Assign substNEWIds for later usage if the element is in our target
+        $this->substNEWwithIDs = array_merge($this->substNEWwithIDs, $parentObj->substNEWwithIDs);
+
+        $this->_substituteRecordValues();
+
+        if ($table != "tx_dataviewer_domain_model_record") return;
+
+        // Disable Versioning
+        //$parentObj->bypassWorkspaceRestrictions = true;
+        //$parentObj->updateModeL10NdiffDataClear = true;
+        //$parentObj->updateModeL10NdiffData = false;
+
+        // Substitute the NEW to Id on all record values and maybe in this array
+        // We need to transform the saved values (NEW<hash>) to already saved ids)
+        $this->_substituteRecordValues();
+
+        $globals = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
+        $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"] = array_replace($globals, $this->tempColumns);
+
+        if (isset($this->saveData[$id]) && is_array($this->saveData[$id])) {
             $recordSaveData = reset($this->saveData[$id]);
 
             // Set the current selected language to the repository
@@ -573,479 +573,485 @@ class Record extends AbstractDataHandler implements DataHandlerInterface
             }
         }
 
-		return;
-	}
+        return;
+    }
 
-	/**
-	 * Validates an field array that came with the
-	 * form post on the record editing
-	 *
-	 * @param array $fieldArray
-	 * @param \MageDeveloper\Dataviewer\Domain\Model\Datatype $datatype
-	 * @return array
-	 */
-	public function validateFieldArray(array $fieldArray, \MageDeveloper\Dataviewer\Domain\Model\Datatype $datatype)
-	{
-		// We need to check if all contents of the fieldArray are fields from the TCA
-		// If not, we need to validate the other fields
-		// We check the tca configuration, and retrieve all fields for the table that are general
-		if(isset($GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"]))
-		{
-			$validColumns = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
-			$diff = array_diff_key($fieldArray, $validColumns);
+    /**
+     * Validates an field array that came with the
+     * form post on the record editing
+     *
+     * @param array $fieldArray
+     * @param \MageDeveloper\Dataviewer\Domain\Model\Datatype $datatype
+     * @return array
+     */
+    public function validateFieldArray(array $fieldArray, \MageDeveloper\Dataviewer\Domain\Model\Datatype $datatype)
+    {
+        // We need to check if all contents of the fieldArray are fields from the TCA
+        // If not, we need to validate the other fields
+        // We check the tca configuration, and retrieve all fields for the table that are general
+        if(isset($GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"]))
+        {
+            $validColumns = $GLOBALS["TCA"]["tx_dataviewer_domain_model_record"]["columns"];
+            $diff = array_diff_key($fieldArray, $validColumns);
 
-			if(empty($diff))
-				return [];
-		}
+            if(empty($diff))
+                return [];
+        }
 
-		$fieldValidationErrors = [];
+        $fieldValidationErrors = [];
 
-		foreach($datatype->getFields() as $_field)
-		{
-			/* @var \MageDeveloper\Dataviewer\Domain\Model\Field $_field */
-			$this->fieldValidation->setField($_field);
+        foreach($datatype->getFields() as $_field)
+        {
+            /* @var \MageDeveloper\Dataviewer\Domain\Model\Field $_field */
+            $this->fieldValidation->setField($_field);
 
-			$value = null;
-			if(isset($fieldArray[$_field->getUid()]))
-				$value = $fieldArray[$_field->getUid()];
+            $value = null;
+            if(isset($fieldArray[$_field->getUid()]))
+                $value = $fieldArray[$_field->getUid()];
 
-			$fieldValueValidationErrors = $this->fieldValidation->validate($value);
+            $fieldValueValidationErrors = $this->fieldValidation->validate($value);
 
-			if(!empty($fieldValueValidationErrors))
-			{
-				foreach($fieldValueValidationErrors as $_error)
-					$fieldValidationErrors[$_field->getFrontendLabel()][] = $_error;
-			}
-		}
+            if(!empty($fieldValueValidationErrors))
+            {
+                foreach($fieldValueValidationErrors as $_error)
+                    $fieldValidationErrors[$_field->getFrontendLabel()][] = $_error;
+            }
+        }
 
-		return $fieldValidationErrors;
-	}
+        return $fieldValidationErrors;
+    }
 
-	/**
-	 * Transforms the NEW-ID into the
-	 * correct ID if found in Substitute Id Array
-	 *
-	 * @param string|int $id
-	 * @return string|int
-	 */
-	protected function _getPossibleSubstitutedId($id)
-	{
-		if(isset($this->substNEWwithIDs[$id]))
-			return $this->substNEWwithIDs[$id];
+    /**
+     * Transforms the NEW-ID into the
+     * correct ID if found in Substitute Id Array
+     *
+     * @param string|int $id
+     * @return string|int
+     */
+    protected function _getPossibleSubstitutedId($id)
+    {
+        if(isset($this->substNEWwithIDs[$id]))
+            return $this->substNEWwithIDs[$id];
 
-		return $id;
-	}
+        return $id;
+    }
 
-	/**
-	 * Substitutes all record values with the now known ids
-	 *
-	 * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
-	 * @return void
-	 */
-	protected function _substituteRecordValues()
-	{
-		if(!empty($this->substNEWwithIDs))
-		{
-			// This is dumb but we just replace the NEWhash.hash which is stored already in
-			// the database into the uid that shows up here
-			foreach($this->substNEWwithIDs as $_subNew=>$_subId)
-			{
-				$this->recordValueRepository->setLanguageUid($this->languageUid);
-				$recordValues = $this->recordValueRepository->findByValueContent($_subNew);
+    /**
+     * Substitutes all record values with the now known ids
+     *
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
+     * @return void
+     */
+    protected function _substituteRecordValues()
+    {
+        if(!empty($this->substNEWwithIDs))
+        {
+            // This is dumb but we just replace the NEWhash.hash which is stored already in
+            // the database into the uid that shows up here
+            foreach($this->substNEWwithIDs as $_subNew=>$_subId)
+            {
+                $this->recordValueRepository->setLanguageUid($this->languageUid);
+                $recordValues = $this->recordValueRepository->findByValueContent($_subNew);
 
-				foreach($recordValues as $_recordValue)
-				{
-					$valueContent = $_recordValue->getValueContent();
-					$newValueContent = str_replace($_subNew, $_subId, $valueContent);
+                foreach($recordValues as $_recordValue)
+                {
+                    $valueContent = $_recordValue->getValueContent();
+                    $newValueContent = str_replace($_subNew, $_subId, $valueContent);
 
-					$_recordValue->setValueContent($newValueContent);
-					$this->recordValueRepository->update($_recordValue);
-				}
+                    $_recordValue->setValueContent($newValueContent);
+                    $this->recordValueRepository->update($_recordValue);
+                }
 
-			}
+            }
 
-			$this->persistenceManager->persistAll();
-		}
-	}
+            $this->persistenceManager->persistAll();
+        }
+    }
 
-	/**
-	 * Processes record information
-	 *
-	 * @param array $recordSaveData
-	 * @param RecordModel $record
-	 * @return bool
-	 */
-	public function processRecord(array $recordSaveData, RecordModel $record)
-	{
-		// Get datatype
-		$datatype = $record->getDatatype();
-		
-		if(!$datatype)
-		{
-			// We try loading the datatype by the recordSaveData Information
-			if(isset($recordSaveData["datatype"]))
-				$datatype = $this->datatypeRepository->findByUid((int)$recordSaveData["datatype"], false);
+    /**
+     * Processes record information
+     *
+     * @param array $recordSaveData
+     * @param RecordModel $record
+     * @return bool
+     */
+    public function processRecord(array $recordSaveData, RecordModel $record)
+    {
+        // Get datatype
+        $datatype = $record->getDatatype();
 
-		}
+        if(!$datatype)
+        {
+            // We try loading the datatype by the recordSaveData Information
+            if(isset($recordSaveData["datatype"]))
+                $datatype = $this->datatypeRepository->findByUid((int)$recordSaveData["datatype"], false);
 
-		if(!$datatype)
-			return false;
+        }
 
-		// Setting the parent record here	
-		if(isset($recordSaveData["parent"]))
-			$record->_setProperty("parent", (int)$recordSaveData["parent"]);
+        if(!$datatype)
+            return false;
 
-		// Refresh record timestamp
-		$record->setTstamp(time());
+        // Setting the parent record here
+        if(isset($recordSaveData["parent"]))
+            $record->_setProperty("parent", (int)$recordSaveData["parent"]);
 
-		// Add icon
-		$record->setIcon($datatype->getIcon());
+        // Refresh record timestamp
+        $record->setTstamp(time());
 
-		//////////////////////
-		// RECORD SAVE DATA //
-		//////////////////////
-		if(!is_array($recordSaveData))
-			return false;
-			
-		$this->_processRecordSaveData($record, $recordSaveData);
-		
-		return true;
-	}
+        // Add icon
+        $record->setIcon($datatype->getIcon());
 
-	/**
-	 * Processes record elements
-	 *
-	 * @param RecordModel $record
-	 * @param array $recordSaveData
-	 * @return void
-	 */
-	protected function _processRecordSaveData(RecordModel $record, array $recordSaveData = [])
-	{
-		$datatype = $record->getDatatype();
+        //////////////////////
+        // RECORD SAVE DATA //
+        //////////////////////
+        if(!is_array($recordSaveData))
+            return false;
 
-		if(isset($recordSaveData["hidden"]))
-			$record->setHidden((bool)$recordSaveData["hidden"]);
-			
-		///////////////////////////////////////////
-		// process all uploads
-		///////////////////////////////////////////
-		$this->_processUploads($_FILES);
-		
-		///////////////////////////////////////////
-		// We go through all fields of the datatype
-		///////////////////////////////////////////
-		$overallResult = null;
-		
-		if(isset($recordSaveData["title"]))
-			$record->setTitle($recordSaveData["title"]);
-		
-		if($record->hasTitleField())
-			$record->setTitle("");
-		
-		foreach($recordSaveData as $_fieldId=>$_value)
-		{
-			$originalValue = $_value;
-			//if($record->_hasProperty($_fieldId))
-			//	$record->_setProperty($_fieldId, $_value);
+        $this->_processRecordSaveData($record, $recordSaveData);
 
-			/* @var FieldModel $field */
-			$field = $datatype->getFieldById($_fieldId);
-			
-			if (!$field instanceof FieldModel)
-				continue;
+        return true;
+    }
 
-			// Process Array (formerly Flexform Element) but don't process checkbox values
-			if(is_array($_value))
-			{
-				// Panic substitute :)
-				$_value = $this->_substituteArrayNEWwithIds($_value);
-				$_value = $this->dataHandler->getFlexformValue($_value, $record, $field);
-				$_value = $this->flexTools->flexArray2Xml($_value);
-			}
+    /**
+     * Processes record elements
+     *
+     * @param RecordModel $record
+     * @param array $recordSaveData
+     * @return void
+     */
+    protected function _processRecordSaveData(RecordModel $record, array $recordSaveData = [])
+    {
+        $datatype = $record->getDatatype();
 
-			// DataHandler Preparations
-			$this->dataHandler->BE_USER	= $GLOBALS["BE_USER"];
-			$this->dataHandler->fileFunc = $this->objectManager->get(BasicFileUtility::class);
+        if(isset($recordSaveData["hidden"]))
+            $record->setHidden((bool)$recordSaveData["hidden"]);
 
-			$overallTca = $this->tcaFactory->generateByField($field, $record, true);
-			$tca = $overallTca["processedTca"]["columns"][$_fieldId]["config"];
-	
-			$res = [];
-			$uploadedFiles = [];
-			if(isset($this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()])) {
-				$uploadedFiles = $this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()];
-			}
-			
-			// We check agains checkValue_SW in the dataHandler
-			$val = $this->dataHandler->checkValue_SW(
-				$res,
-				$_value,
-				$tca,
-				"tx_dataviewer_domain_model_record",
-				$record->getUid(),
-				$_value,
-				"new",
-				$record->getPid(),
-				"[tx_dataviewer_domain_model_record:{$record->getUid()}:{$field->getUid()}]",
-				$field->getUid(),
-				$uploadedFiles,
-				$record->getPid(),
-				[]
-			);
-			
-			// Select and Inline Value
-			if(array_key_exists("value", $val) && $tca["type"] !== "select" && $tca["type"] !== "inline")
-				$_value = $val["value"];
+        ///////////////////////////////////////////
+        // process all uploads
+        ///////////////////////////////////////////
+        $this->_processUploads($_FILES);
 
-			if ($tca["type"] == "inline")
-			{
-				// We divorce the values and set them back together
-				$values = GeneralUtility::trimExplode(",", $_value, true);
-				$_value = [];
-				foreach($values as $v)
-					if ($v) $_value[] = $v;
+        ///////////////////////////////////////////
+        // We go through all fields of the datatype
+        ///////////////////////////////////////////
+        $overallResult = null;
 
-				$_value = implode(",", $_value);
-			}
 
-			if($field->getType() == "rte")
-			{
-				// Initialize transformation:
-				/* @var RteHtmlParser $parseHTML */
-				$parseHTML = GeneralUtility::makeInstance(RteHtmlParser::class);
-				$parseHTML->init("tt_content" . ':' . "bodytext", $record->getPid()); // We imitate a tt_content bodytext field
-				// Perform transformation for value -> db:
-				$_value = $parseHTML->TS_transform_db($_value);
-			}
+        $recordTitle = $record->getTitle();
+        if(isset($recordSaveData["title"]))
+            $record->setTitle($recordSaveData["title"]);
 
-			$result = $this->_saveRecordValue($record, $field, $_value, $this->languageUid);
+        if($record->hasTitleField())
+            $record->setTitle("");
 
-			if (!$result)
-				$overallResult = false;
+        foreach($recordSaveData as $_fieldId=>$_value)
+        {
+            $originalValue = $_value;
+            //if($record->_hasProperty($_fieldId))
+            //	$record->_setProperty($_fieldId, $_value);
 
-		}
+            /* @var FieldModel $field */
+            $field = $datatype->getFieldById($_fieldId);
 
-		if ($overallResult === false)
-		{
-			// We hide the record until it is ok
-			$record->setHidden(true);
+            if (!$field instanceof FieldModel)
+                continue;
 
-			// Persist valid fields
-			//$this->persistenceManager->persistAll();
+            // Process Array (formerly Flexform Element) but don't process checkbox values
+            if(is_array($_value))
+            {
+                // Panic substitute :)
+                $_value = $this->_substituteArrayNEWwithIds($_value);
+                $_value = $this->dataHandler->getFlexformValue($_value, $record, $field);
+                $_value = $this->flexTools->flexArray2Xml($_value);
+            }
 
-			// Redirect back to form
-			$this->_redirectRecord($record->getUid());
-		}
-	}
+            // DataHandler Preparations
+            $this->dataHandler->BE_USER	= $GLOBALS["BE_USER"];
+            $this->dataHandler->fileFunc = $this->objectManager->get(BasicFileUtility::class);
 
-	/**
-	 * Saves record field value content
-	 *
-	 * @param RecordModel $record
-	 * @param FieldModel $field
-	 * @param mixed $value
-	 * @param null|int $languageUid
-	 * @return int
-	 */
-	protected function _saveRecordValue(RecordModel $record, FieldModel $field, $value, $languageUid = null)
-	{
-		$pid   = $record->getPid();
-		
-		$baseRecord = $record;
-		if($record->getL10nParent() instanceof RecordModel &&
-		   $record->getUid() != $record->getL10nParent()->getUid()
-		) {
-			$baseRecord = $record->getL10nParent();
-		}
+            $overallTca = $this->tcaFactory->generateByField($field, $record, true);
+            $tca = $overallTca["processedTca"]["columns"][$_fieldId]["config"];
 
-		/* @var RecordValueModel $recordValue */
-		// Original record value without translation
-		// This should be found in most of the cases
-		$origRecordValue = $this->recordValueRepository->findOneByRecordAndField($baseRecord, $field);
+            $res = [];
+            $uploadedFiles = [];
+            if(isset($this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()])) {
+                $uploadedFiles = $this->dataHandler->uploadedFileArray["tx_dataviewer_domain_model_record"][$record->getUid()][$field->getUid()];
+            }
 
-		if(!$origRecordValue instanceof RecordValueModel)
-		{
-			// If we haven't found a original recordvalue for the default translation,
-			// we need to create one here and assign all the original default translated data
-			$origRecordValue = $this->objectManager->get(RecordValueModel::class);
-			$origRecordValue->setRecord($baseRecord);
-			$origRecordValue->setField($field);
-			$origRecordValue->setPid($pid);
-			$origRecordValue->set_languageUid(0);
+            // We check agains checkValue_SW in the dataHandler
+            $val = $this->dataHandler->checkValue_SW(
+                $res,
+                $_value,
+                $tca,
+                "tx_dataviewer_domain_model_record",
+                $record->getUid(),
+                $_value,
+                "new",
+                $record->getPid(),
+                "[tx_dataviewer_domain_model_record:{$record->getUid()}:{$field->getUid()}]",
+                $field->getUid(),
+                $uploadedFiles,
+                $record->getPid(),
+                []
+            );
 
-			// We directly add the original recordvalue to the database
-			$this->recordValueRepository->add($origRecordValue);
-		}
-		
-		$recordValue = $origRecordValue;
-		if($languageUid > 0) 
-		{
-			// We try to find a translated record value
-			$langRecordValue = $this->recordValueRepository->findOneByRecordAndField($record, $field, $languageUid);
+            // Select and Inline Value
+            if(array_key_exists("value", $val) && $tca["type"] !== "select" && $tca["type"] !== "inline")
+                $_value = $val["value"];
 
-			if(!$langRecordValue instanceof RecordValueModel)
-			{
-				// We need to create a new translated recordvalue here, and add the translation details to it
-				$langRecordValue = $this->objectManager->get(RecordValueModel::class);
-				//$langRecordValue = $origRecordValue;
-			}
+            if ($tca["type"] == "inline")
+            {
+                // We divorce the values and set them back together
+                $values = GeneralUtility::trimExplode(",", $_value, true);
+                $_value = [];
+                foreach($values as $v)
+                    if ($v) $_value[] = $v;
 
-			$langRecordValue->setRecord($record);
-			$langRecordValue->setField($field);
-			$langRecordValue->setL10nParent($origRecordValue);
-			$langRecordValue->setPid($pid);
-			$langRecordValue->set_languageUid($languageUid);
-			
-			// Use the language recordvalue for the next steps
-			$recordValue = $langRecordValue;
-		}
-		
-		// Defaults
-		$valueContent = $value;
-		$search = $value;
+                $_value = implode(",", $_value);
+            }
 
-		//////////////////////////////////////////////////////////////////////////////////
-		// Specific Save Part
-		// -------------------------------------------------------------------------------
-		// The data is finalized by the according fieldValue 
-		// It is splitted up in two parts:
-		//
-		// Value Content for the main database entry that is performed 
-		// withing the SingleFieldContainer
-		//
-		// Search for the database search entry that will be used
-		// in all search, sorting and filtering plugins
-		//////////////////////////////////////////////////////////////////////////////////
-		$fieldtypeConfiguration = $this->fieldtypeSettingsService->getFieldtypeConfiguration( $field->getType() );
-		$valueClass = $fieldtypeConfiguration->getValueClass();
+            if($field->getType() == "rte")
+            {
+                // Initialize transformation:
+                /* @var RteHtmlParser $parseHTML */
+                $parseHTML = GeneralUtility::makeInstance(RteHtmlParser::class);
+                $parseHTML->init("tt_content" . ':' . "bodytext", $record->getPid()); // We imitate a tt_content bodytext field
+                // Perform transformation for value -> db:
+                $_value = $parseHTML->TS_transform_db($_value);
+            }
 
-		if (!$this->objectManager->isRegistered($valueClass))
-			$valueClass = \MageDeveloper\Dataviewer\Form\Fieldvalue\General::class;
+            $result = $this->_saveRecordValue($record, $field, $_value, $this->languageUid);
 
-		/* @var \MageDeveloper\Dataviewer\Form\Fieldvalue\FieldvalueInterface $fieldValue */
-		$fieldvalue = $this->objectManager->get($valueClass);
+            if (!$result)
+                $overallResult = false;
 
-		if($fieldvalue instanceof \MageDeveloper\Dataviewer\Form\Fieldvalue\FieldvalueInterface)
-		{
-			// We need to initialize the fieldvalue with the plain value
-			$fieldvalue->init($field, $value);
-			$fieldvalue->setRecordValue($recordValue);
+        }
 
-			////////////////////////////////////////////////////////////////////////////////////////////////
-			// This is the place where we will later pre-render the value through each fieldValue
-			// so we can retrieve a TYPO3-valid save value for the database
-			// TODO: render value through each formvalue
-			////////////////////////////////////////////////////////////////////////////////////////////////
+        // Fallback for inline hiding of a record
+        if($record->getTitle() == "")
+            $record->setTitle($recordTitle);
 
-			// We retrieve our needed data from the fieldvalue
-			$valueContent 	= $fieldvalue->getValueContent();
-			$search 		= $fieldvalue->getSearch();
-		}
+        if ($overallResult === false)
+        {
+            // We hide the record until it is ok
+            $record->setHidden(true);
 
-		// Assign value to the recordValue
-		$recordValue->setValueContent($valueContent);
-		// Assign clean search string to the recordValue
-		$recordValue->setSearch($search);
+            // Persist valid fields
+            //$this->persistenceManager->persistAll();
 
-		// Pre-Persisting
-		$this->persistenceManager->persistAll();
+            // Redirect back to form
+            $this->_redirectRecord($record->getUid());
+        }
+    }
 
-		// Add or update
-		if($recordValue->getUid() > 0)
-		{
-			// Update
-			$this->recordValueRepository->update($recordValue);
-		}
-		else
-		{
-			// Add
-			$this->recordValueRepository->add($recordValue);
-			$record->addRecordValue($recordValue);
-		}
+    /**
+     * Saves record field value content
+     *
+     * @param RecordModel $record
+     * @param FieldModel $field
+     * @param mixed $value
+     * @param null|int $languageUid
+     * @return int
+     */
+    protected function _saveRecordValue(RecordModel $record, FieldModel $field, $value, $languageUid = null)
+    {
+        $pid   = $record->getPid();
 
-		// FieldType Text can overwrite the record title, so it can be inactive
-		if ($field->getIsRecordTitle() && (strlen($value) < 250))
-			$record->appendTitle($valueContent);
+        $baseRecord = $record;
+        if($record->getL10nParent() instanceof RecordModel &&
+            $record->getUid() != $record->getL10nParent()->getUid()
+        ) {
+            $baseRecord = $record->getL10nParent();
+        }
 
-		return true;
-	}
+        /* @var RecordValueModel $recordValue */
+        // Original record value without translation
+        // This should be found in most of the cases
+        $origRecordValue = $this->recordValueRepository->findOneByRecordAndField($baseRecord, $field);
 
-	/**
-	 * Builds default record contents from inline contents
-	 * Our inline contents contain a 'value'-Key, that is unneeded but had
-	 * to be in out Inline-Form-Field-Configuration. To bad :(
-	 *
-	 * @param array $inlineContents
-	 * @return array
-	 */
-	protected function _buildRecordContentsFromInlineContents(array $inlineContents = [])
-	{
-		$recordContents = [];
+        if(!$origRecordValue instanceof RecordValueModel)
+        {
+            // If we haven't found a original recordvalue for the default translation,
+            // we need to create one here and assign all the original default translated data
+            $origRecordValue = $this->objectManager->get(RecordValueModel::class);
+            $origRecordValue->setRecord($baseRecord);
+            $origRecordValue->setField($field);
+            $origRecordValue->setPid($pid);
+            $origRecordValue->set_languageUid(0);
 
-		$parent = null;
-		foreach($inlineContents as $_key=>$_value)
-		{
-			if ($_key == "value")
-			{
-				$recordContents = $inlineContents["value"];
-			}
-			else
-			{
-				if (is_array($_value))
-					$recordContents[$_key] = $this->_buildRecordContentsFromInlineContents($_value);
-				else
-					$recordContents[$_key] = $_value;
-			}
+            // We directly add the original recordvalue to the database
+            $this->recordValueRepository->add($origRecordValue);
+        }
 
-		}
+        $recordValue = $origRecordValue;
+        if($languageUid > 0)
+        {
+            // We try to find a translated record value
+            $langRecordValue = $this->recordValueRepository->findOneByRecordAndField($record, $field, $languageUid);
 
-		return $recordContents;
-	}
+            if(!$langRecordValue instanceof RecordValueModel)
+            {
+                // We need to create a new translated recordvalue here, and add the translation details to it
+                $langRecordValue = $this->objectManager->get(RecordValueModel::class);
+                //$langRecordValue = $origRecordValue;
+            }
 
-	/**
-	 * Removes recordValue by a given record id
-	 * 
-	 * @param int $recordId
-	 * @param null|int $languageUid
-	 * @return void
-	 */
-	protected function _removeRecordValuesByRecordId($recordId, $languageUid = null)
-	{
-		if(!is_null($languageUid))
-			$this->recordValueRepository->setLanguageUid($languageUid);
+            $langRecordValue->setRecord($record);
+            $langRecordValue->setField($field);
+            $langRecordValue->setL10nParent($origRecordValue);
+            $langRecordValue->setPid($pid);
+            $langRecordValue->set_languageUid($languageUid);
 
-		$recordValues = $this->recordValueRepository->findByRecordId($recordId);
-		
-		if ($recordValues && $recordValues->count())
-		{
-			// Remove each record value
-			/* @var RecordValueModel $_recordValue */
-			foreach ( $recordValues as $_recordValue )
-			{
-				if($_recordValue->getField() instanceof FieldModel)
-				{
-					// We need to check the fieldtype to do certain delete behaviours here
-					switch ($_recordValue->getField()->getType()) {
-						case "datatype":
-							$ids = GeneralUtility::trimExplode(",", $_recordValue->getValueContent());
-							foreach ($ids as $_id) {
-								$_record = $this->getRecordById($_id);
-								if ($_record) {
-									$_record->setDeleted(true);
-									$this->recordRepository->update($_record);
-								}
-							}
-							break;
-						default:
-							break;
-					}
-					
-					$_recordValue->setDeleted(true);
-					$this->recordValueRepository->update($_recordValue);
-				}
-			}
-		}
-		
-		$this->persistenceManager->persistAll();
-	}
+            // Use the language recordvalue for the next steps
+            $recordValue = $langRecordValue;
+        }
+
+        // Defaults
+        $valueContent = $value;
+        $search = $value;
+
+        //////////////////////////////////////////////////////////////////////////////////
+        // Specific Save Part
+        // -------------------------------------------------------------------------------
+        // The data is finalized by the according fieldValue
+        // It is splitted up in two parts:
+        //
+        // Value Content for the main database entry that is performed
+        // withing the SingleFieldContainer
+        //
+        // Search for the database search entry that will be used
+        // in all search, sorting and filtering plugins
+        //////////////////////////////////////////////////////////////////////////////////
+        $fieldtypeConfiguration = $this->fieldtypeSettingsService->getFieldtypeConfiguration( $field->getType() );
+        $valueClass = $fieldtypeConfiguration->getValueClass();
+
+        if (!$this->objectManager->isRegistered($valueClass))
+            $valueClass = \MageDeveloper\Dataviewer\Form\Fieldvalue\General::class;
+
+        /* @var \MageDeveloper\Dataviewer\Form\Fieldvalue\FieldvalueInterface $fieldValue */
+        $fieldvalue = $this->objectManager->get($valueClass);
+
+        if($fieldvalue instanceof \MageDeveloper\Dataviewer\Form\Fieldvalue\FieldvalueInterface)
+        {
+            // We need to initialize the fieldvalue with the plain value
+            $fieldvalue->init($field, $value);
+            $fieldvalue->setRecordValue($recordValue);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            // This is the place where we will later pre-render the value through each fieldValue
+            // so we can retrieve a TYPO3-valid save value for the database
+            // TODO: render value through each formvalue
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // We retrieve our needed data from the fieldvalue
+            $valueContent 	= $fieldvalue->getValueContent();
+            $search 		= $fieldvalue->getSearch();
+        }
+
+        // Assign value to the recordValue
+        $recordValue->setValueContent($valueContent);
+        // Assign clean search string to the recordValue
+        $recordValue->setSearch($search);
+
+        // Pre-Persisting
+        $this->persistenceManager->persistAll();
+
+        // Add or update
+        if($recordValue->getUid() > 0)
+        {
+            // Update
+            $this->recordValueRepository->update($recordValue);
+        }
+        else
+        {
+            // Add
+            $this->recordValueRepository->add($recordValue);
+            $record->addRecordValue($recordValue);
+        }
+
+        // FieldType Text can overwrite the record title, so it can be inactive
+        if ($field->getIsRecordTitle() && (strlen($value) < 250))
+            $record->appendTitle($valueContent);
+
+        return true;
+    }
+
+    /**
+     * Builds default record contents from inline contents
+     * Our inline contents contain a 'value'-Key, that is unneeded but had
+     * to be in out Inline-Form-Field-Configuration. To bad :(
+     *
+     * @param array $inlineContents
+     * @return array
+     */
+    protected function _buildRecordContentsFromInlineContents(array $inlineContents = [])
+    {
+        $recordContents = [];
+
+        $parent = null;
+        foreach($inlineContents as $_key=>$_value)
+        {
+            if ($_key == "value")
+            {
+                $recordContents = $inlineContents["value"];
+            }
+            else
+            {
+                if (is_array($_value))
+                    $recordContents[$_key] = $this->_buildRecordContentsFromInlineContents($_value);
+                else
+                    $recordContents[$_key] = $_value;
+            }
+
+        }
+
+        return $recordContents;
+    }
+
+    /**
+     * Removes recordValue by a given record id
+     *
+     * @param int $recordId
+     * @param null|int $languageUid
+     * @return void
+     */
+    protected function _removeRecordValuesByRecordId($recordId, $languageUid = null)
+    {
+        if(!is_null($languageUid))
+            $this->recordValueRepository->setLanguageUid($languageUid);
+
+        $recordValues = $this->recordValueRepository->findByRecordId($recordId);
+
+        if ($recordValues && $recordValues->count())
+        {
+            // Remove each record value
+            /* @var RecordValueModel $_recordValue */
+            foreach ( $recordValues as $_recordValue )
+            {
+                if($_recordValue->getField() instanceof FieldModel)
+                {
+                    // We need to check the fieldtype to do certain delete behaviours here
+                    switch ($_recordValue->getField()->getType()) {
+                        case "datatype":
+                            $ids = GeneralUtility::trimExplode(",", $_recordValue->getValueContent());
+                            foreach ($ids as $_id) {
+                                $_record = $this->getRecordById($_id);
+                                if ($_record) {
+                                    $_record->setDeleted(true);
+                                    $this->recordRepository->update($_record);
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    $_recordValue->setDeleted(true);
+                    $this->recordValueRepository->update($_recordValue);
+                }
+            }
+        }
+
+        $this->persistenceManager->persistAll();
+    }
 }
