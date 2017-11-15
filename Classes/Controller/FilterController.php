@@ -129,7 +129,6 @@ class FilterController extends AbstractController
 
             }
 
-
             $previousSelected = $this->filterSessionService->getSelectedOptions();
             $selectedOptions = $this->_prepareSelectedOptionsArray($previousSelected, $selected, $merge);
 
@@ -284,11 +283,6 @@ class FilterController extends AbstractController
             if($_prvOpt["filter_field"] == "")
                 unset($previousSelectedOptions[$i]);
 
-        foreach($currentSelectedOptions as $i=>$_curOpt)
-            if($_curOpt["filter_field"] == "")
-                unset($currentSelectedOptions[$i]);
-
-
         foreach($previousSelectedOptions as $i=>$_prvOpt)
             foreach($currentSelectedOptions as $j=>$_curOpt)
             {
@@ -301,6 +295,10 @@ class FilterController extends AbstractController
             }
 
         $selectedOptions = array_merge($previousSelectedOptions, $currentSelectedOptions);
+
+        foreach($selectedOptions as $i=>$_selOpt)
+            if($_selOpt["filter_field"] == "")
+                unset($selectedOptions[$i]);
 
         // We need to group the selected options by their field
         $selectedOptionsGrouped = $this->_groupSelectedOptions($selectedOptions);
