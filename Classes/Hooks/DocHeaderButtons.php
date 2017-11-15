@@ -50,6 +50,22 @@ class DocHeaderButtons
 	 */
 	protected $iconFactory;
 
+    /**
+     * Backend Access Service
+     *
+     * @var \MageDeveloper\Dataviewer\Service\Backend\BackendAccessService
+     * @inject
+     */
+    protected $backendAccessService;
+
+    /**
+     * Standalone View
+     *
+     * @var \MageDeveloper\Dataviewer\Fluid\View\StandaloneView
+     * @inject
+     */
+    protected $standaloneView;
+
 	/**
 	 * Constructor
 	 *
@@ -57,11 +73,12 @@ class DocHeaderButtons
 	 */
 	public function __construct()
 	{
-		$this->objectManager      = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
-		$this->datatypeRepository = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\DatatypeRepository::class);
-		$this->recordRepository   = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordRepository::class);
-		
-		$this->iconFactory		  = $this->objectManager->get(\TYPO3\CMS\Core\Imaging\IconFactory::class);
+		$this->objectManager        = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
+		$this->datatypeRepository   = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\DatatypeRepository::class);
+		$this->recordRepository     = $this->objectManager->get(\MageDeveloper\Dataviewer\Domain\Repository\RecordRepository::class);
+		$this->iconFactory		    = $this->objectManager->get(\TYPO3\CMS\Core\Imaging\IconFactory::class);
+		$this->backendAccessService = $this->objectManager->get(\MageDeveloper\Dataviewer\Service\Backend\BackendAccessService::class);
+	    $this->standaloneView       = $this->objectManager->get(\MageDeveloper\Dataviewer\Fluid\View\StandaloneView::class);
 	}
 
 	/**
@@ -86,50 +103,85 @@ class DocHeaderButtons
 
 		if (!in_array(GeneralUtility::_GET("M"), $allowedModules) || !$currentPageId || $currentPageId == 0)
 			return $buttons;
-		
-		$html 		= "{namespace core=TYPO3\\CMS\\Core\\ViewHelpers}
-					   {namespace dv=MageDeveloper\\Dataviewer\\ViewHelpers}";
-					   
-					   
-		$htmlButton = "<a href=\"{dv:backend.newLink(pid:'{currentPageId}',table:'tx_dataviewer_domain_model_record',datatype:datatype.uid)}\" title=\"{title}\"><core:icon identifier=\"extensions-dataviewer-{icon}\" size=\"small\" /><core:icon identifier=\"actions-add\" size=\"small\" /></a>";
-		/* @var \MageDeveloper\Dataviewer\Fluid\View\StandaloneView $view */
-		$view 		= $this->objectManager->get(\MageDeveloper\Dataviewer\Fluid\View\StandaloneView::class);
 
-		$datatypes = $this->datatypeRepository->findAllOnPid($currentPageId, ["sorting" => QueryInterface::ORDER_ASCENDING]);
-		if($datatypes)
-		{
-			foreach($datatypes as $_datatype)
-			{
+        // Assigning the current page id to the standalone view
+        $this->standaloneView->assign("currentPageId", $currentPageId);
+
+        // Fetching all datatypes on the current pid
+        $datatypesOnThisPid = $this->datatypeRepository->findAllOnPid($currentPageId, ["sorting" => QueryInterface::ORDER_ASCENDING]);
+
+        // Datatypes from the current pid
+        if($datatypesOnThisPid) {
+
+		    foreach($datatypesOnThisPid as $_datatype) {
 				/* @var \MageDeveloper\Dataviewer\Domain\Model\Datatype $_datatype */
-				
-				if($_datatype->getHideAdd())
-					continue;
-				
-				$iconId = "default";
-				if($_datatype->getIcon())
-					$iconId = $_datatype->getIcon();
-				
-				$rendered = "";
-				$buttonHtmlRender = $html . $htmlButton;
-				$title = LocalizationUtility::translate("module.create_record_by_datatype", [$_datatype->getName()]);
 
-				$view->assign("currentPageId", $currentPageId);
-				$view->assign("datatype", $_datatype);
-				$view->assign("icon", $iconId);
-				$view->assign("title", $title);				
-				
-				$rendered = $view->renderSource($buttonHtmlRender);
-				
-				$button = $buttonBar->makeFullyRenderedButton();
-				$button->setHtmlSource($rendered);
-				
-				$buttons[ButtonBar::BUTTON_POSITION_LEFT][2][] = $button;
-			}
+				$buttonContent = $this->_getDatatypeButtonContents($_datatype);
+
+                $button = $buttonBar->makeFullyRenderedButton();
+
+                if($button) {
+                    $button->setHtmlSource($buttonContent);
+                    $buttons[ButtonBar::BUTTON_POSITION_LEFT][2][] = $button;
+                }
+ 			}
 			
 		}
 
+        // Datatypes from the page TSconfig
+        $datatypeIdsFromTSConfig = $this->backendAccessService->getDocHeaderDatatypes($currentPageId);
+        foreach($datatypeIdsFromTSConfig as $_id) {
+
+            /* @var \MageDeveloper\Dataviewer\Domain\Model\Datatype $_datatype */
+            $_datatype = $this->datatypeRepository->findByUid($_id, true);
+
+            $buttonContent = $this->_getDatatypeButtonContents($_datatype);
+
+            $button = $buttonBar->makeFullyRenderedButton();
+
+            if($button) {
+                $button->setHtmlSource($buttonContent);
+                $buttons[ButtonBar::BUTTON_POSITION_LEFT][4][] = $button;
+            }
+        }
+
 		return $buttons;
 	}
+
+    /**
+     * Gets an button according to a datatype model
+     *
+     * @param \MageDeveloper\Dataviewer\Domain\Model\Datatype $datatype
+     * @return string
+     */
+	protected function _getDatatypeButtonContents($datatype)
+    {
+        $html 		= "{namespace core=TYPO3\\CMS\\Core\\ViewHelpers}
+					   {namespace dv=MageDeveloper\\Dataviewer\\ViewHelpers}";
+
+        $htmlButton = "<a href=\"{dv:backend.newLink(pid:'{currentPageId}',table:'tx_dataviewer_domain_model_record',datatype:datatype.uid)}\" title=\"{title}\"><core:icon identifier=\"extensions-dataviewer-{icon}\" size=\"small\" /><core:icon identifier=\"actions-add\" size=\"small\" /></a>";
+        /* @var \MageDeveloper\Dataviewer\Fluid\View\StandaloneView $view */
+
+        if($datatype->getHideAdd())
+            return;
+
+        $iconId = "default";
+        if($datatype->getIcon())
+            $iconId = $datatype->getIcon();
+
+        $rendered = "";
+        $buttonHtmlRender = $html . $htmlButton;
+        $title = LocalizationUtility::translate("module.create_record_by_datatype", [$datatype->getName()]);
+
+        $this->standaloneView->assign("datatype", $datatype);
+        $this->standaloneView->assign("icon", $iconId);
+        $this->standaloneView->assign("title", $title);
+
+        $rendered = $this->standaloneView->renderSource($buttonHtmlRender);
+
+        return $rendered;
+    }
+
 
 	/**
 	 * Resolves the current page id

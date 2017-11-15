@@ -119,6 +119,48 @@ class BackendAccessService
 		return (bool)$this->_getBackendUser()->isAdmin();
 	}
 
+    /**
+     * Gets a pages ts config by a given
+     * page id
+     *
+     * @param int $pageId
+     * @return array
+     */
+    public function getPageTSConfig($pageId)
+    {
+        $pageTSConfig = \TYPO3\CMS\Backend\Utility\BackendUtility::getPagesTSconfig($pageId);
+        
+        if(isset($pageTSConfig["tx_dataviewer."])) {
+
+            $config = $pageTSConfig["tx_dataviewer."];
+
+            if(is_array($config))
+                return $config;
+
+        }
+        
+        return [];
+    }
+
+    /**
+     * Gets a pages docHeader Datatype Ids by
+     * a given page id
+     *
+     * @param int $pageId
+     * @return array
+     */
+    public function getDocHeaderDatatypes($pageId)
+    {
+        $config = $this->getPageTSConfig($pageId);
+
+        $datatypeIds = [];
+        if(isset($config["docHeaderDatatypes"])) {
+            $datatypeIds = GeneralUtility::trimExplode(",", $config["docHeaderDatatypes"]);
+        }
+
+        return $datatypeIds;
+    }
+
 	/**
 	 * Returns the current BE user.
 	 *
