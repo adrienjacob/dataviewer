@@ -6,6 +6,7 @@ use MageDeveloper\Dataviewer\Domain\Model\Record;
 use MageDeveloper\Dataviewer\Service\Settings\Plugin\ListSettingsService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use \TYPO3\CMS\Core\Database\ConnectionPool;
@@ -321,14 +322,21 @@ class RecordRepository extends AbstractRepository
 
 		$query->setQuerySettings($querySettings);
 		$statement = $this->getStatementByAdvancedConditions($filters, $sortField, $sortOrder, $limit, $storagePids);
-		$query->statement($statement);
-		
-		$result = $query->execute(true);
-		$dataMapper = GeneralUtility::makeInstance(DataMapper::class);
-		$mapped = $dataMapper->map(Record::class, $result);
-		
-		return $mapped;
-	}
+
+
+        try {
+            $query->statement($statement);
+
+            $result = $query->execute(true);
+            $dataMapper = GeneralUtility::makeInstance(DataMapper::class);
+            $mapped = $dataMapper->map(Record::class, $result);
+
+        } catch (\Exception $e) {
+            $mapped = [];
+        }
+
+        return $mapped;
+    }
 
 	/**
 	 * Counts records by conditions like
