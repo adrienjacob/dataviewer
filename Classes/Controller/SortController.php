@@ -54,8 +54,9 @@ class SortController extends AbstractController
 	 */
 	public function indexAction()
 	{
-		$sortBy		= $this->sortSessionService->getSortField();
-		$sortOrder	= $this->sortSessionService->getSortOrder();
+		$sortBy		= $this->sessionServiceContainer->getSortSessionService()->getSortField();
+		$sortOrder	= $this->sessionServiceContainer->getSortSessionService()->getSortOrder();
+
 		$sortByOptions = $this->_getSortByOptions();
 
 		$this->view->assign("sortBy", $sortBy);
@@ -90,7 +91,7 @@ class SortController extends AbstractController
 			$this->forward("index");
 
 		$sortByOptions  = $this->sortSettingsService->getSortFields();
-		
+
 		/********************
 		 * Validate Sort By
 		 ********************/
@@ -114,12 +115,12 @@ class SortController extends AbstractController
 				&$sortOrder,
 				&$this,
 			]
-		);	
+		);
 
-		$this->sortSessionService->setSortField($sortBy);
-		$this->sortSessionService->setSortOrder($sortOrder);
+		$this->sessionServiceContainer->getSortSessionService()->setSortField($sortBy);
+		$this->sessionServiceContainer->getSortSessionService()->setSortOrder($sortOrder);
 
-		$this->_redirectToPid();
+        $this->_redirectToPid();
 	}
 
 	/**
@@ -185,12 +186,12 @@ class SortController extends AbstractController
 	 */
 	protected function initializeView(ViewInterface $view)
 	{
+        // Parent
+        parent::initializeView($view);
+
 		// Individual session key
 		$uid = $this->sortSettingsService->getTargetContentUid();
 		$sessionKey = SortSessionService::SESSION_PREFIX_KEY;
-		$this->sortSessionService->setPrefixKey("{$sessionKey}-{$uid}");
-
-		// Parent
-		parent::initializeView($view);
-	}
+		$this->sessionServiceContainer->setTargetUid($uid);
+    }
 }

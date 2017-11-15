@@ -696,10 +696,13 @@ class RecordController extends AbstractController
 			$sortField	= $this->listSettingsService->getSortField();
 			$sortOrder	= $this->listSettingsService->getSortOrder();
 
-			$this->sessionServiceContainer->getSortSessionService()->setSortField($sortField);
-			$this->sessionServiceContainer->getSortSessionService()->setSortOrder($sortOrder);
+			if(!$this->sessionServiceContainer->getSortSessionService()->getSortField())
+                $this->sessionServiceContainer->getSortSessionService()->setSortField($sortField);
+
+			if(!$this->sessionServiceContainer->getSortSessionService()->getSortOrder())
+    			$this->sessionServiceContainer->getSortSessionService()->setSortOrder($sortOrder);
 		}
-		
+
 		$sortField		= $this->sessionServiceContainer->getSortSessionService()->getSortField();
 		$sortOrder		= $this->sessionServiceContainer->getSortSessionService()->getSortOrder();
 

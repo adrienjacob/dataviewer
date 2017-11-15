@@ -9,6 +9,7 @@ use MageDeveloper\Dataviewer\Service\Session\PagerSessionService;
 use MageDeveloper\Dataviewer\Service\Session\SearchSessionService;
 use MageDeveloper\Dataviewer\Service\Session\SortSessionService;
 use MageDeveloper\Dataviewer\Service\Session\SessionService;
+use TYPO3\CMS\Core\SingletonInterface;
 
 /**
  * MageDeveloper Dataviewer Extension
@@ -20,7 +21,7 @@ use MageDeveloper\Dataviewer\Service\Session\SessionService;
  * @copyright   Magento Developers / magedeveloper.de <kontakt@magedeveloper.de>
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class SessionServiceContainer
+class SessionServiceContainer implements SingletonInterface
 {
 	/**
 	 * Object Manager
@@ -101,6 +102,8 @@ class SessionServiceContainer
 	 */
 	public function setTargetUid($targetUid)
 	{
+	    $this->targetUid = $targetUid;
+
 		$filterSessionKey	= FilterSessionService::SESSION_PREFIX_KEY;
 		$letterSessionKey	= LetterSessionService::SESSION_PREFIX_KEY;
 		$pagerSessionKey	= PagerSessionService::SESSION_PREFIX_KEY;
@@ -118,6 +121,16 @@ class SessionServiceContainer
 		$this->selectSessionService->setPrefixKey("{$selectSessionKey}-{$targetUid}");
 		$this->injectorSessionService->setPrefixKey("{$injectorSessionKey}-{$targetUid}");
 	}
+
+    /**
+     * Gets the target uid
+     *
+     * @return int
+     */
+    public function getTargetUid()
+    {
+        return $this->targetUid;
+    }
 
 	/**
 	 * Returns the filter session service

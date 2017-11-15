@@ -472,7 +472,7 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 * @return int
 	 */
 	protected function _getContentUid()
-	{
+    {
 		$uid = 0;
 		$contentObj = $this->configurationManager->getContentObject();
 
@@ -499,8 +499,8 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 			$this->pluginSettingsService->setSettings($this->settings);
 	
 		// Individual session key
-		$uid = $this->_getContentUid();
-		$this->sessionServiceContainer->setTargetUid($uid);
+        $uid = $this->_getContentUid();
+        $this->sessionServiceContainer->setTargetUid($uid);
 
 		$cObj = $this->configurationManager->getContentObject();
 		if ($cObj instanceof \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer)
@@ -551,7 +551,7 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 		$this->view->assign("baseUrl", $GLOBALS["TSFE"]->baseURL);
 
 		// Parent
-		parent::initializeView($view);
+        parent::initializeView($view);
 	}
 
 	/**
