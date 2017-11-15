@@ -213,7 +213,7 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 		$fields = $this->fieldRepository->findByDatatype($datatype);
 		
 		$tabConfigurationArray = $datatype->getTabConfigurationArray();
-		$renderedFields = []; $bottomParts = []; $topParts = [];
+		$renderedFields = []; $bottomParts = []; $topParts = []; $requireJsModules = [];
 		foreach($fields as $_field)
 		{
 			$this->fieldRenderer->setField($_field);
@@ -235,6 +235,9 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 				{
 					if ($renderResults["html"])
 						$fieldHtml .= $renderResults["html"];
+
+                    // Forcing the save for inline elements onChange
+					$renderResults["doSaveFieldName"] = "doSave";
 					
 					$this->formResultCompiler->mergeResult($renderResults);
 
@@ -244,6 +247,7 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 						$topParts[$_field->getUid()] = $this->formResultCompiler->JStop();
 
 					$bottomParts[$_field->getUid()] = $this->formResultCompiler->printNeededJSFunctions();
+                    $requireJsModules = array_merge($renderResults['requireJsModules'], $requireJsModules);
 				}
 			}
 			else
@@ -294,9 +298,19 @@ class RecordRenderer extends AbstractRenderer implements RendererInterface
 
         $end = microtime(true) - $start;
 
+
+        // Fix for onChange within inline dataviewer records
+        // -------------------------------------------------
+        // This is code that is normally generated in the PageRenderer. We adapt this
+        // procedure here, to generater the additional javascript in this renderer
+        // to pass it back to our custom user-function, that merges it
+        // with the default resultArray
+        $userElement->additionalResultArray["requireJsModules"] = $requireJsModules;
+
+
 		// Add stylesheet file to the formResultCompiler
 		$path = GeneralUtility::getFileAbsFileName("EXT:dataviewer/Resources/Public/Css/dataviewer-backend.css");
-		$css = PathUtility::getAbsoluteWebPath($path);
+		$css = trim(PathUtility::getRelativePathTo($path), '/');
 		$this->formResultCompiler->mergeResult(
 			["stylesheetFiles" => [$css],
 			 "additionalJavaScriptPost" => [],
