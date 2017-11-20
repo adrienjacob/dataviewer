@@ -167,11 +167,12 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 	 * Redirects to the current TYPO3 Page
 	 *
 	 * @param int|null $redirectPid Redirect Page Id
+     * @param int $statusCode
 	 * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
 	 * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
 	 * @return void
 	 */
-	protected function _redirectToPid($redirectPid = null, array $arguments = array())
+	protected function _redirectToPid($redirectPid = null, array $arguments = array(), $statusCode = 200)
 	{
 		if (is_null($redirectPid))
 		{
@@ -182,7 +183,7 @@ abstract class AbstractController extends \TYPO3\CMS\Extbase\Mvc\Controller\Acti
 
 		$this->uriBuilder->setTargetPageUid($redirectPid);
 		$this->uriBuilder->setArguments($arguments);
-		$this->redirectToURI($this->uriBuilder->build());
+		$this->redirectToUri($this->uriBuilder->build(), $statusCode);
 
 		exit();
 	}
