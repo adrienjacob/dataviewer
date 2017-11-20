@@ -1,6 +1,7 @@
 <?php
 namespace MageDeveloper\Dataviewer\Controller;
 
+use Guzzle\Http\ReadLimitEntityBody;
 use MageDeveloper\Dataviewer\Domain\Model\Field;
 use MageDeveloper\Dataviewer\Domain\Model\Record;
 use MageDeveloper\Dataviewer\Domain\Model\Variable;
@@ -8,6 +9,7 @@ use MageDeveloper\Dataviewer\Service\Settings\Plugin\ListSettingsService;
 use MageDeveloper\Dataviewer\Service\Settings\Plugin\SearchSettingsService;
 use MageDeveloper\Dataviewer\Utility\DebugUtility;
 use MageDeveloper\Dataviewer\Utility\LocalizationUtility as Locale;
+use phpDocumentor\Reflection\Types\Resource;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -127,7 +129,7 @@ class RecordController extends AbstractController
 		$cachedIds = null;
 		if($lifetime > 0)
 			$cachedIds = $cache->get($cacheIdentifier);
-			
+
 		if(is_array($cachedIds))
 		{
 			$cached = true;
@@ -601,23 +603,59 @@ class RecordController extends AbstractController
 			$filters 		= $this->_getFilters();
 			$this->_replaceMarkersInFilters($filters);
 
-			$limit			= $this->listSettingsService->getLimitation();
-			$perPage		= $this->sessionServiceContainer->getPagerSessionService()->getPerPage();
-			$selectedPage	= $this->sessionServiceContainer->getPagerSessionService()->getSelectedPage();
+            $perPage		= $this->sessionServiceContainer->getPagerSessionService()->getPerPage();
 
-			// Sorting
-			$sortField		= $this->sessionServiceContainer->getSortSessionService()->getSortField();
-			$sortOrder		= $this->sessionServiceContainer->getSortSessionService()->getSortOrder();
+            if(!is_null($perPage)) {
+                $sessionIsSet = true;
 
-			if(is_null($perPage)) $perPage = $this->listSettingsService->getPerPage();
+                if($perPage > 0) {
 
-			if(!$this->sessionServiceContainer->getSortSessionService()->hasOrderings() || !$this->_hasTargetPlugin("dataviewer_sort"))
-			{
-				// We initally set orderings from our plugin settings and will use
-				// information from the sort plugin later, once it was used
-				$sortField	= $this->listSettingsService->getSortField();
-				$sortOrder	= $this->listSettingsService->getSortOrder();
-			}
+                    // The selectbox was used to select a count of records to limit
+                    // PerPage is set in session, so we can create a limit from this
+                    $selectedPage	= $this->sessionServiceContainer->getPagerSessionService()->getSelectedPage();
+
+                    if(is_null($selectedPage) || !$selectedPage) {
+                        $selectedPage = 1;
+                    }
+                } else {
+                    // View All is set in the selector box, so we need to remove all perPage Settings
+                    $selectedPage = 1;
+                    $perPage = 999999;
+                }
+
+            } else {
+                $sessionIsSet = false;
+                $selectedPage = 1;
+
+                // Pager was not set in session,
+                // so we take the default setting from the plugin settings
+                $perPage	= $this->listSettingsService->getPerPage();
+            }
+
+            $page = ($selectedPage*$perPage) - $perPage;
+
+            if($sessionIsSet === true) {
+                $limit = "$page,{$perPage}";
+            } else {
+                $limit = $this->listSettingsService->getLimitation();
+            }
+
+            if(!$this->_hasTargetPlugin("dataviewer_sort") || !$this->sessionServiceContainer->getSortSessionService()->hasOrderings())
+            {
+                // If this plugin has no sorting plugin that is targeting to this plugin,
+                // we can set the default sorting settings to the plugin settings
+                $sortField	= $this->listSettingsService->getSortField();
+                $sortOrder	= $this->listSettingsService->getSortOrder();
+
+                if(!$this->sessionServiceContainer->getSortSessionService()->getSortField())
+                    $this->sessionServiceContainer->getSortSessionService()->setSortField($sortField);
+
+                if(!$this->sessionServiceContainer->getSortSessionService()->getSortOrder())
+                    $this->sessionServiceContainer->getSortSessionService()->setSortOrder($sortOrder);
+            }
+
+            $sortField		= $this->sessionServiceContainer->getSortSessionService()->getSortField();
+            $sortOrder		= $this->sessionServiceContainer->getSortSessionService()->getSortOrder();
 
 			$contentObj = $this->configurationManager->getContentObject();
 			if($contentObj instanceof \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer &&
@@ -659,35 +697,44 @@ class RecordController extends AbstractController
 	 */
 	protected function _getSelectedRecords()
 	{
-		// Limit
-		$limit			= $this->listSettingsService->getLimitation();
-		
 		// Pager
 		$perPage		= $this->sessionServiceContainer->getPagerSessionService()->getPerPage();
-		
-		// Session has no pager settings, so we take the default setting from the plugin settings
-		if(!$perPage)
-		{
-			$perPage	= $this->listSettingsService->getPerPage();
-			$this->sessionServiceContainer->getSortSessionService()->setPerPage($perPage);
-		}
-		
-		if($limit > 0)
-			$perPage = $limit;
-		
-		$selectedPage	= $this->sessionServiceContainer->getPagerSessionService()->getSelectedPage();
-		if(is_null($selectedPage) || !$selectedPage) $selectedPage = 1;
 
-		$page			= ($selectedPage*$perPage) - $perPage;
+        if(!is_null($perPage)) {
+            $sessionIsSet = true;
 
-		// If nothing was set before, we use the per page setting from our records plugin
-		if(is_null($perPage)) $perPage = $this->listSettingsService->getPerPage();
+            if($perPage > 0) {
 
-		if($limit === "0") {
-		    $limit = null; // Removing the limit
-        } else if($perPage && $selectedPage > 0) {
-            $limit = "$page,{$perPage}";
+                // The selectbox was used to select a count of records to limit
+                // PerPage is set in session, so we can create a limit from this
+                $selectedPage	= $this->sessionServiceContainer->getPagerSessionService()->getSelectedPage();
+
+                if(is_null($selectedPage) || !$selectedPage) {
+                    $selectedPage = 1;
+                }
+            } else {
+                // View All is set in the selector box, so we need to remove all perPage Settings
+                $selectedPage = 1;
+                $perPage = 999999;
+            }
+
+        } else {
+            $sessionIsSet = false;
+            $selectedPage = 1;
+
+            // Pager was not set in session,
+            // so we take the default setting from the plugin settings
+            $perPage	= $this->listSettingsService->getPerPage();
         }
+
+        $page = ($selectedPage*$perPage) - $perPage;
+
+        if($sessionIsSet === true) {
+            $limit = "$page,{$perPage}";
+        } else {
+            $limit = $this->listSettingsService->getLimitation();
+        }
+
 
 		if(!$this->_hasTargetPlugin("dataviewer_sort") || !$this->sessionServiceContainer->getSortSessionService()->hasOrderings())
 		{

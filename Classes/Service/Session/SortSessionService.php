@@ -74,12 +74,7 @@ class SortSessionService extends SessionService
 	 */
 	public function getSortOrder()
 	{
-		$sortOrder 		= $this->restoreFromSession(self::SESSION_KEY_SORT_ORDER);
-
-		if ($sortOrder && !is_null($sortOrder))
-			return $sortOrder;
-
-		return QueryInterface::ORDER_ASCENDING;
+		return $this->restoreFromSession(self::SESSION_KEY_SORT_ORDER);
 	}
 
 	/**
