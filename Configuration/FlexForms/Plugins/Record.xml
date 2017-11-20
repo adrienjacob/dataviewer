@@ -524,7 +524,7 @@
                 <el>
                     <settings.number_of_records>
                         <TCEforms>
-                            <label>LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.number_of_records</label>
+                            <label>LLL:EXT:dataviewer/Resources/Private/Language/locallang.xlf:flexform.number_of_initial_records</label>
                             <config>
                                 <type>input</type>
                                 <size>4</size>

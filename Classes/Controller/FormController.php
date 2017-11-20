@@ -137,7 +137,7 @@ class FormController extends AbstractController
 		{
 			$view = $this->getStandaloneView(true);
 			$templateSwitch = $this->getTemplateSwitch();
-			
+
 			if($templateSwitch)
 				$view->setTemplatePathAndFilename($templateSwitch);
 		}

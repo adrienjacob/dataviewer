@@ -322,13 +322,12 @@ class RecordRepository extends AbstractRepository
 
 		$query->setQuerySettings($querySettings);
 		$statement = $this->getStatementByAdvancedConditions($filters, $sortField, $sortOrder, $limit, $storagePids);
-
+        $dataMapper = GeneralUtility::makeInstance(DataMapper::class);
 
         try {
             $query->statement($statement);
 
             $result = $query->execute(true);
-            $dataMapper = GeneralUtility::makeInstance(DataMapper::class);
             $mapped = $dataMapper->map(Record::class, $result);
 
         } catch (\Exception $e) {
