@@ -426,7 +426,7 @@ class RecordRepository extends AbstractRepository
 			$statement .= $this->_createAdditionalWhereClauseByFilters($filters)."";
 
 		$statement .= "GROUP BY          RECORD.uid"."\r\n";
-		$statement .= "ORDER BY          {$sortField} {$sortOrder}"."\r\n";
+        $statement .= "ORDER BY          {$sortField} * 1 {$sortOrder}, {$sortField} {$sortOrder}"."\r\n";
 
 		if (!is_null($limit))
 			$statement .= "LIMIT             {$limit}"."\r\n";
