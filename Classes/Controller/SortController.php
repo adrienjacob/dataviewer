@@ -185,12 +185,12 @@ class SortController extends AbstractController
 	 */
 	protected function initializeView(ViewInterface $view)
 	{
+        // Parent
+        parent::initializeView($view);
+
 		// Individual session key
 		$uid = $this->sortSettingsService->getTargetContentUid();
 		$sessionKey = SortSessionService::SESSION_PREFIX_KEY;
 		$this->sortSessionService->setPrefixKey("{$sessionKey}-{$uid}");
-
-		// Parent
-		parent::initializeView($view);
 	}
 }

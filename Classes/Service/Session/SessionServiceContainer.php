@@ -101,6 +101,8 @@ class SessionServiceContainer
 	 */
 	public function setTargetUid($targetUid)
 	{
+        $this->targetUid = $targetUid;
+
 		$filterSessionKey	= FilterSessionService::SESSION_PREFIX_KEY;
 		$letterSessionKey	= LetterSessionService::SESSION_PREFIX_KEY;
 		$pagerSessionKey	= PagerSessionService::SESSION_PREFIX_KEY;
@@ -119,7 +121,17 @@ class SessionServiceContainer
 		$this->injectorSessionService->setPrefixKey("{$injectorSessionKey}-{$targetUid}");
 	}
 
-	/**
+    /**
+     * Gets the target uid
+     *
+     * @return int
+     */
+    public function getTargetUid()
+    {
+        return $this->targetUid;
+    }
+
+    /**
 	 * Returns the filter session service
 	 * 
 	 * @return FilterSessionService
